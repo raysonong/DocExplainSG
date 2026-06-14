@@ -11,9 +11,15 @@ import logging
 from fastapi import APIRouter, Form, HTTPException, UploadFile, status
 
 from app.config import get_settings
-from app.schemas import AnalysisResult, AskRequest, AskResponse, Language
+from app.schemas import (
+    AnalysisResult,
+    AskRequest,
+    AskResponse,
+    GenericSummary,
+    Language,
+)
 from app.services import extraction
-from app.services.llm import AnalysisError, analyze, ask
+from app.services.llm import AnalysisError, analyze, ask, summarize
 
 logger = logging.getLogger(__name__)
 
@@ -47,19 +53,13 @@ def _parse_language(value: str) -> Language:
         )
 
 
-@router.post(
-    "/analyze",
-    response_model=AnalysisResult,
-    tags=["analyze"],
-    summary="Analyse an uploaded document and return a plain-language explanation.",
-)
-async def analyze_document(
-    files: list[UploadFile],
-    language: str = Form("en"),
-) -> AnalysisResult:
-    settings = get_settings()
-    target_language = _parse_language(language)
+async def _read_uploads(files: list[UploadFile], action: str) -> tuple[extraction.ExtractedInputs, int]:
+    """Validate, read, and extract uploaded files into model-ready inputs.
 
+    Shared by /analyze and /summarize. Raises clean HTTPExceptions; reads bytes
+    in memory only and never logs their contents.
+    """
+    settings = get_settings()
     if not files:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -71,7 +71,6 @@ async def analyze_document(
             detail=f"Too many files. Maximum is {settings.max_files}.",
         )
 
-    # Read all files into memory, enforcing the total-size cap as we go.
     total_bytes = 0
     processed: list[extraction.ExtractedInputs] = []
     for upload in files:
@@ -103,18 +102,50 @@ async def analyze_document(
         )
 
     logger.info(
-        "analyze request files=%d total_bytes=%d text_chars=%d images=%d lang=%s",
+        "%s request files=%d total_bytes=%d text_chars=%d images=%d",
+        action,
         len(files),
         total_bytes,
         len(inputs.text),
         len(inputs.images),
-        target_language.value,
     )
+    return inputs, total_bytes
 
+
+@router.post(
+    "/analyze",
+    response_model=AnalysisResult,
+    tags=["analyze"],
+    summary="Analyse an uploaded document and return a plain-language explanation.",
+)
+async def analyze_document(
+    files: list[UploadFile],
+    language: str = Form("en"),
+) -> AnalysisResult:
+    target_language = _parse_language(language)
+    inputs, _ = await _read_uploads(files, action="analyze")
     try:
         return await analyze(inputs, target_language)
     except AnalysisError as err:
         # Already-logged; return a friendly, non-leaky error.
+        raise _llm_http_error(err)
+
+
+@router.post(
+    "/summarize",
+    response_model=GenericSummary,
+    tags=["analyze"],
+    summary="Summarise any document in plain language (not SG-form-specific).",
+)
+async def summarize_document(
+    files: list[UploadFile],
+    language: str = Form("en"),
+) -> GenericSummary:
+    target_language = _parse_language(language)
+    inputs, _ = await _read_uploads(files, action="summarize")
+    try:
+        return await summarize(inputs, target_language)
+    except AnalysisError as err:
         raise _llm_http_error(err)
 
 

@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LanguageSelector } from '../components/LanguageSelector';
+import { ModeSelector } from '../components/ModeSelector';
 import { pickPdf, pickPhotos, takePhoto } from '../lib/pickers';
 import { useAnalysis } from '../store/analysis';
 import { useLanguage } from '../store/language';
@@ -87,7 +88,10 @@ export default function HomeScreen() {
     <ScrollView
       contentContainerStyle={[
         styles.container,
-        { paddingBottom: insets.bottom + spacing.xl },
+        {
+          paddingTop: insets.top + spacing.md,
+          paddingBottom: insets.bottom + spacing.xl,
+        },
       ]}
     >
       <LanguageSelector />
@@ -107,6 +111,8 @@ export default function HomeScreen() {
 
       {/* Spacer pushes the actions + privacy note down to the bottom. */}
       <View style={styles.spacer} />
+
+      <ModeSelector />
 
       <View style={styles.actions}>
         {BUTTONS.map((b) => (

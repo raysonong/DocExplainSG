@@ -22,12 +22,14 @@ import anthropic
 from anthropic import AsyncAnthropic
 
 from app.config import get_settings
-from app.schemas import AnalysisResult, Language
+from app.schemas import AnalysisResult, GenericSummary, Language
 from app.services.extraction import ExtractedInputs
 from app.services.prompts import (
     DISCLAIMERS,
     build_ask_prompt,
     build_ask_system_instruction,
+    build_generic_system_instruction,
+    build_generic_task_prompt,
     build_system_instruction,
     build_task_prompt,
 )
@@ -89,6 +91,15 @@ def _redact_nric(result: AnalysisResult) -> AnalysisResult:
     return result
 
 
+def _redact_summary(s: GenericSummary) -> GenericSummary:
+    """Strip any NRIC/FIN from a generic summary's text fields."""
+    s.title = _scrub(s.title) or s.title
+    s.summary = _scrub(s.summary) or s.summary
+    s.confidence_notes = _scrub(s.confidence_notes)
+    s.key_points = [_scrub(p) or p for p in s.key_points]
+    return s
+
+
 def _get_client() -> AsyncAnthropic:
     settings = get_settings()
     if not settings.anthropic_api_key:
@@ -125,9 +136,8 @@ def _image_block(data: bytes, mime_type: str) -> dict:
     }
 
 
-def _build_content(inputs: ExtractedInputs, language: Language) -> list[dict]:
+def _build_content(inputs: ExtractedInputs, task: str) -> list[dict]:
     """Assemble the user-turn content: task prompt + text + image blocks."""
-    task = build_task_prompt(language, date.today().isoformat())
     if inputs.text.strip():
         task += "\n\n=== DOCUMENT TEXT ===\n" + inputs.text.strip()
 
@@ -145,7 +155,7 @@ async def analyze(inputs: ExtractedInputs, language: Language) -> AnalysisResult
     """Run the structured analysis. Retries once on transient failure."""
     settings = get_settings()
     client = _get_client()
-    content = _build_content(inputs, language)
+    content = _build_content(inputs, build_task_prompt(language, date.today().isoformat()))
 
     last_error: Exception | None = None
     for attempt in range(1, _MAX_ATTEMPTS + 1):
@@ -188,6 +198,52 @@ async def analyze(inputs: ExtractedInputs, language: Language) -> AnalysisResult
 
     raise AnalysisError(
         "The document could not be analysed.",
+        status_code=_status_of(last_error) if last_error else None,
+    ) from last_error
+
+
+async def summarize(inputs: ExtractedInputs, language: Language) -> GenericSummary:
+    """Summarise any document in plain language. Retries once on failure."""
+    settings = get_settings()
+    client = _get_client()
+    content = _build_content(inputs, build_generic_task_prompt(language))
+
+    last_error: Exception | None = None
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
+        try:
+            response = await client.messages.parse(
+                model=settings.anthropic_model,
+                max_tokens=_MAX_OUTPUT_TOKENS,
+                system=build_generic_system_instruction(),
+                messages=[{"role": "user", "content": content}],
+                output_format=GenericSummary,
+            )
+            result = response.parsed_output
+            if not isinstance(result, GenericSummary):
+                raise AnalysisError("Model did not return a valid summary.")
+            result.language = language
+            result.disclaimer = DISCLAIMERS[language]
+            result = _redact_summary(result)  # PDPA safety net
+            logger.info(
+                "summarize ok model=%s lang=%s attempt=%d",
+                settings.anthropic_model,
+                language.value,
+                attempt,
+            )
+            return result
+        except anthropic.BadRequestError:
+            raise
+        except Exception as exc:  # noqa: BLE001
+            last_error = exc
+            logger.warning(
+                "summarize attempt %d/%d failed: %s",
+                attempt,
+                _MAX_ATTEMPTS,
+                type(exc).__name__,
+            )
+
+    raise AnalysisError(
+        "The document could not be summarised.",
         status_code=_status_of(last_error) if last_error else None,
     ) from last_error
 

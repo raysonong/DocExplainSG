@@ -61,7 +61,10 @@ export default function ResultScreen() {
 
   const startOver = () => {
     reset();
-    router.replace('/');
+    // Pop back to the existing Home at the root rather than stacking a new one
+    // (which would leave a phantom "back" entry).
+    if (router.canDismiss()) router.dismissAll();
+    else router.replace('/');
   };
 
   if (!result) {
@@ -82,7 +85,10 @@ export default function ResultScreen() {
     <ScrollView
       contentContainerStyle={[
         styles.container,
-        { paddingBottom: insets.bottom + spacing.xl },
+        {
+          paddingTop: insets.top + spacing.md,
+          paddingBottom: insets.bottom + spacing.xl,
+        },
       ]}
     >
       {/* Header: title + issuer + type */}

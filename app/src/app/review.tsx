@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ApiError, analyzeDocument } from '../lib/api';
+import { ApiError, analyzeDocument, summarizeDocument } from '../lib/api';
 import { pickPdf, pickPhotos, takePhoto } from '../lib/pickers';
 import { useAnalysis } from '../store/analysis';
 import { useLanguage } from '../store/language';
@@ -20,20 +20,32 @@ import { MIN_TOUCH, colors, fontSize, radius, spacing } from '../theme/theme';
 import type { SelectedFile } from '../types';
 
 /**
- * Review screen: confirm the pages, add or remove, then "Explain this".
+ * Review screen: confirm the pages, add or remove, then run the chosen pipeline
+ * (explain an official letter, or summarize any document).
  */
 export default function ReviewScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
   const { language } = useLanguage();
-  const { files, addFiles, removeFile, setResult } = useAnalysis();
+  const { files, addFiles, removeFile, mode, setResult, setSummary } =
+    useAnalysis();
 
   const mutation = useMutation({
-    mutationFn: () => analyzeDocument(files, language),
-    onSuccess: (result) => {
-      setResult(result);
-      router.replace('/result');
+    mutationFn: async () => {
+      if (mode === 'summarize') {
+        return { kind: 'summarize' as const, data: await summarizeDocument(files, language) };
+      }
+      return { kind: 'analyze' as const, data: await analyzeDocument(files, language) };
+    },
+    onSuccess: (out) => {
+      if (out.kind === 'summarize') {
+        setSummary(out.data);
+        router.replace('/summary');
+      } else {
+        setResult(out.data);
+        router.replace('/result');
+      }
     },
   });
 
@@ -61,7 +73,10 @@ export default function ReviewScreen() {
     <ScrollView
       contentContainerStyle={[
         styles.container,
-        { paddingBottom: insets.bottom + spacing.xl },
+        {
+          paddingTop: insets.top + spacing.md,
+          paddingBottom: insets.bottom + spacing.xl,
+        },
       ]}
     >
       <Text style={styles.heading}>

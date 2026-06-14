@@ -77,6 +77,7 @@ The API key is **never** hardcoded and never returned by any endpoint.
 | ------ | ---- | ------- |
 | `GET`  | `/api/health` | Liveness; reports whether a key is configured. |
 | `POST` | `/api/analyze` | Analyse a document. `multipart/form-data`: one or more `files` + a `language` field (`en`/`zh`/`ms`/`ta`). Returns the structured `AnalysisResult`. |
+| `POST` | `/api/summarize` | Plain-language summary of **any** document (not SG-form-specific). Same `files` + `language` form. Returns `GenericSummary` (title, summary, key points). |
 | `POST` | `/api/ask` | Follow-up Q&A. JSON `{ document_context, question, language }`. Answers **only** from the context; says so if the answer isn't there. Returns `{ answer }`. |
 
 Supported uploads: JPG, PNG, WEBP, HEIC, and PDF (text-based **or** scanned).

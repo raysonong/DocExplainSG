@@ -1,6 +1,11 @@
 {
   "lang": { "en": "English", "zh": "中文", "ms": "Bahasa Melayu", "ta": "தமிழ்" },
-  "title": { "review": "Review document", "result": "Explanation" },
+  "title": { "review": "Review document", "result": "Explanation", "summary": "Summary" },
+  "mode": {
+    "label": "What do you want to do?",
+    "explain": "Explain a letter",
+    "summarize": "Summarize a document"
+  },
   "privacy": {
     "title": "Your privacy",
     "p1": "Your document is sent to Anthropic's Claude AI to create the explanation.",
@@ -11,7 +16,7 @@
     "accept": "I agree — continue"
   },
   "home": {
-    "tagline": "Understand your official letters in plain language.",
+    "tagline": "Understand any document in plain language.",
     "takePhoto": "Take photo",
     "choosePhoto": "Choose photo",
     "choosePdf": "Choose PDF",
@@ -39,6 +44,7 @@
     "deadlines": "Deadlines",
     "actions": "What you need to do",
     "summary": "Summary",
+    "keyPoints": "Key points",
     "referenceNumbers": "Reference numbers",
     "glossary": "What the terms mean",
     "yourDocument": "Your document",

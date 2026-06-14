@@ -1,6 +1,11 @@
 {
   "lang": { "en": "English", "zh": "中文", "ms": "Bahasa Melayu", "ta": "தமிழ்" },
-  "title": { "review": "查看文件", "result": "解释" },
+  "title": { "review": "查看文件", "result": "解释", "summary": "摘要" },
+  "mode": {
+    "label": "您想做什么？",
+    "explain": "解读信件",
+    "summarize": "总结文件"
+  },
   "privacy": {
     "title": "您的隐私",
     "p1": "您的文件会发送给 Anthropic 的 Claude AI 以生成说明。",
@@ -11,7 +16,7 @@
     "accept": "我同意 — 继续"
   },
   "home": {
-    "tagline": "用简单易懂的语言看懂您的官方信件。",
+    "tagline": "用简单易懂的语言看懂任何文件。",
     "takePhoto": "拍照",
     "choosePhoto": "选择照片",
     "choosePdf": "选择 PDF",
@@ -39,6 +44,7 @@
     "deadlines": "截止日期",
     "actions": "您需要做的事",
     "summary": "摘要",
+    "keyPoints": "要点",
     "referenceNumbers": "参考编号",
     "glossary": "术语解释",
     "yourDocument": "您的文件",

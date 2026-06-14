@@ -135,6 +135,34 @@ class AnalysisResult(BaseModel):
     )
 
 
+class GenericSummary(BaseModel):
+    """A plain-language summary of any document (not SG-form-specific).
+
+    Used by /api/summarize for general documents where the deadline/issuer/
+    document-type structure of AnalysisResult doesn't apply.
+    """
+
+    language: Language = Field(description="The language all text fields are written in.")
+    title: str = Field(description="A short, human-friendly title, in the target language.")
+    summary: str = Field(
+        description=(
+            "3-6 short, plain-language sentences explaining what the document is "
+            "and what it says, in the target language."
+        )
+    )
+    key_points: list[str] = Field(
+        default_factory=list,
+        description="The most important points, in the target language (at most 7).",
+    )
+    confidence_notes: str | None = Field(
+        default=None,
+        description="Anything the model was unsure about or could not read, or null.",
+    )
+    disclaimer: str = Field(
+        description="A short reminder that this is an aid, not advice, in the target language."
+    )
+
+
 class AskRequest(BaseModel):
     """Follow-up question about an already-analysed document."""
 

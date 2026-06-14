@@ -100,6 +100,38 @@ def test_analyze_rejects_unsupported_file(mock_gemini):
 
 
 @pytest.fixture
+def mock_summarize(monkeypatch):
+    from app.schemas import GenericSummary
+
+    async def _fake_summarize(inputs, language):
+        return GenericSummary(
+            language=language,
+            title="Sample document",
+            summary="This is a short plain-language summary.",
+            key_points=["Point one.", "Point two."],
+            confidence_notes=None,
+            disclaimer="Not advice.",
+        )
+
+    monkeypatch.setattr("app.routers.analyze.summarize", _fake_summarize)
+
+
+def test_summarize_happy_path(mock_summarize):
+    pdf = SAMPLES / "iras_notice_of_assessment.pdf"
+    with pdf.open("rb") as f:
+        resp = client.post(
+            "/api/summarize",
+            files={"files": ("doc.pdf", f, "application/pdf")},
+            data={"language": "en"},
+        )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["language"] == "en"
+    assert body["title"] == "Sample document"
+    assert isinstance(body["key_points"], list) and len(body["key_points"]) == 2
+
+
+@pytest.fixture
 def mock_ask(monkeypatch):
     async def _fake_ask(document_context, question, language):
         return f"[{language.value}] grounded answer"

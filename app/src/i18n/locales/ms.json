@@ -1,6 +1,11 @@
 {
   "lang": { "en": "English", "zh": "中文", "ms": "Bahasa Melayu", "ta": "தமிழ்" },
-  "title": { "review": "Semak dokumen", "result": "Penjelasan" },
+  "title": { "review": "Semak dokumen", "result": "Penjelasan", "summary": "Ringkasan" },
+  "mode": {
+    "label": "Apa yang anda mahu buat?",
+    "explain": "Terangkan surat",
+    "summarize": "Ringkaskan dokumen"
+  },
   "privacy": {
     "title": "Privasi anda",
     "p1": "Dokumen anda dihantar kepada Claude AI daripada Anthropic untuk menghasilkan penjelasan.",
@@ -11,7 +16,7 @@
     "accept": "Saya setuju — teruskan"
   },
   "home": {
-    "tagline": "Fahami surat rasmi anda dalam bahasa yang mudah.",
+    "tagline": "Fahami sebarang dokumen dalam bahasa yang mudah.",
     "takePhoto": "Ambil foto",
     "choosePhoto": "Pilih foto",
     "choosePdf": "Pilih PDF",
@@ -39,6 +44,7 @@
     "deadlines": "Tarikh akhir",
     "actions": "Apa yang anda perlu buat",
     "summary": "Ringkasan",
+    "keyPoints": "Perkara penting",
     "referenceNumbers": "Nombor rujukan",
     "glossary": "Maksud istilah",
     "yourDocument": "Dokumen anda",

@@ -2,7 +2,12 @@
 
 import { Platform } from 'react-native';
 
-import type { AnalysisResult, AppLanguage, SelectedFile } from '../types';
+import type {
+  AnalysisResult,
+  AppLanguage,
+  GenericSummary,
+  SelectedFile,
+} from '../types';
 import { API_BASE } from './config';
 
 export class ApiError extends Error {
@@ -33,10 +38,12 @@ async function appendFile(form: FormData, file: SelectedFile): Promise<void> {
   }
 }
 
-export async function analyzeDocument(
+/** POST files + language to a backend endpoint and return the parsed JSON. */
+async function postDocument<T>(
+  path: string,
   files: SelectedFile[],
   language: AppLanguage,
-): Promise<AnalysisResult> {
+): Promise<T> {
   const form = new FormData();
   for (const file of files) {
     await appendFile(form, file);
@@ -45,7 +52,7 @@ export async function analyzeDocument(
 
   let resp: Response;
   try {
-    resp = await fetch(`${API_BASE}/api/analyze`, {
+    resp = await fetch(`${API_BASE}${path}`, {
       method: 'POST',
       body: form,
       // Do NOT set Content-Type — the runtime sets the multipart boundary.
@@ -67,7 +74,21 @@ export async function analyzeDocument(
     throw new ApiError(detail, resp.status);
   }
 
-  return (await resp.json()) as AnalysisResult;
+  return (await resp.json()) as T;
+}
+
+export function analyzeDocument(
+  files: SelectedFile[],
+  language: AppLanguage,
+): Promise<AnalysisResult> {
+  return postDocument<AnalysisResult>('/api/analyze', files, language);
+}
+
+export function summarizeDocument(
+  files: SelectedFile[],
+  language: AppLanguage,
+): Promise<GenericSummary> {
+  return postDocument<GenericSummary>('/api/summarize', files, language);
 }
 
 export async function askQuestion(

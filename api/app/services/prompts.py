@@ -68,6 +68,33 @@ def build_system_instruction() -> str:
     )
 
 
+def build_generic_system_instruction() -> str:
+    """Standing rules for summarising any document in plain language."""
+    return (
+        "You summarise documents in plain language for a general reader.\n\n"
+        "Rules:\n"
+        "1. Use ONLY information present in the document. Never invent facts, "
+        "figures, dates, or claims.\n"
+        "2. If something is unclear or unreadable, note it in `confidence_notes` "
+        "rather than guessing.\n"
+        "3. NEVER include any NRIC or FIN (national identity) number in your "
+        "output — these are sensitive personal data; omit them.\n"
+        "4. Write a short summary (3-6 sentences) plus the most important key "
+        "points (at most 7). Keep proper nouns and figures accurate; do not "
+        "exaggerate or editorialise."
+    )
+
+
+def build_generic_task_prompt(target_language: Language) -> str:
+    """Per-request instruction for the generic summariser."""
+    language_name = LANGUAGE_NAMES[target_language]
+    return (
+        "Summarise the attached document (provided as extracted text and/or "
+        f"images) for a general reader. Write the title, summary, and key points "
+        f"in {language_name}. Set the `language` field to '{target_language.value}'."
+    )
+
+
 def build_ask_system_instruction(target_language: Language) -> str:
     """Standing rules for follow-up Q&A — grounded, no fabrication."""
     language_name = LANGUAGE_NAMES[target_language]

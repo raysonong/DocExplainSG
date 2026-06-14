@@ -54,6 +54,19 @@ export interface AnalysisResult {
   disclaimer: string;
 }
 
+/** Plain-language summary of any document (mirrors backend GenericSummary). */
+export interface GenericSummary {
+  language: AppLanguage;
+  title: string;
+  summary: string;
+  key_points: string[];
+  confidence_notes: string | null;
+  disclaimer: string;
+}
+
+/** Which pipeline to run on the uploaded document. */
+export type AnalysisMode = 'analyze' | 'summarize';
+
 /** A file the user picked or captured, normalised across the pickers. */
 export interface SelectedFile {
   uri: string;
