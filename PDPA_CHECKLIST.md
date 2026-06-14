@@ -40,9 +40,9 @@
 ## Launch gate — must be done before real personal data
 
 - [ ] 📝 **Appoint a DPO** and publish a reachable business contact (legally required in SG).
-- [ ] 📝 **Publish a privacy policy** covering: what is collected, that it is sent to **Anthropic (US)** to generate the explanation, that Anthropic does **not** train on it, retention (none on our side; Anthropic per DPA/ZDR), security measures, and DPO contact.
-- [ ] 📝 **Sign Anthropic's Data Processing Addendum (DPA)** and request **zero data retention (ZDR)**. File the signed copy. (See trust.anthropic.com / Anthropic commercial terms.)
-- [ ] 📝 **Record consent** — convert the first-run notice into an explicit tap-to-agree, store that the user consented (timestamp/version), and block upload until they do.
+- [ ] 📝 **Publish a privacy policy** — ✅ **drafted in [PRIVACY.md](PRIVACY.md)**; remaining: fill the `[PLACEHOLDER]`s, have it legally reviewed, host it, and link it from the app.
+- [ ] 📝 **Sign Anthropic's Data Processing Addendum (DPA)** and request **zero data retention (ZDR)**. File the signed copy. (See trust.anthropic.com / Anthropic commercial terms.) — *Account/legal action; cannot be automated.*
+- [x] ✅ **Record consent** — implemented: the first-run notice is now an explicit, **versioned + timestamped tap-to-agree** gate that blocks the app until the user agrees (`app/src/components/PrivacyNotice.tsx`). Remaining 📝: align the wording with the published policy.
 - [ ] 📝 **Complete a DPIA** (Data Protection Impact Assessment) — required given CPF/IRAS sensitivity. Use PDPC's DPIA guide. Document the data flow and the NRIC handling below.
 - [ ] 🔧 **Secure the backend** — HTTPS/TLS, an API key/auth on `/api/analyze` and `/api/ask`, and rate limiting.
 

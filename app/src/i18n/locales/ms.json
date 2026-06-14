@@ -7,7 +7,8 @@
     "p2": "Tiada apa-apa disimpan. Ia diproses sekali sahaja kemudian dibuang — tiada akaun, tiada sejarah, dan kami tidak merekod kandungannya.",
     "p3": "Penjelasan ini adalah bantuan, bukan nasihat rasmi atau undang-undang.",
     "warning": "API Claude tidak menggunakan dokumen anda untuk melatih model AI. Ini masih demo awal, dan semakan privasi penuh belum dilakukan sebelum digunakan dengan dokumen sebenar.",
-    "accept": "Saya faham — teruskan"
+    "consentLine": "Dengan menekan butang di bawah, anda bersetuju dokumen anda diproses seperti yang diterangkan di atas.",
+    "accept": "Saya setuju — teruskan"
   },
   "home": {
     "tagline": "Fahami surat rasmi anda dalam bahasa yang mudah.",

@@ -171,7 +171,8 @@ A first-run privacy notice and in-app disclaimers ship in the app (Phase 6).
 
 See **[PDPA_CHECKLIST.md](PDPA_CHECKLIST.md)** for the full obligation-by-obligation
 checklist, the pre-launch gate (DPO, DPA/ZDR, DPIA, consent, backend hardening),
-and the NRIC/FIN handling notes.
+and the NRIC/FIN handling notes. A draft privacy policy is in
+**[PRIVACY.md](PRIVACY.md)** (pending legal review).
 
 ---
 

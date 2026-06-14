@@ -7,7 +7,8 @@
     "p2": "Nothing is stored. It is processed once and then discarded — no account, no history, and we do not log its contents.",
     "p3": "This explanation is an aid, not official or legal advice.",
     "warning": "Claude's API does not use your document to train AI models. This is still an early demo, and a full privacy review is pending before use with real documents.",
-    "accept": "I understand — continue"
+    "consentLine": "By tapping below, you agree to your document being processed as described above.",
+    "accept": "I agree — continue"
   },
   "home": {
     "tagline": "Understand your official letters in plain language.",

@@ -13,31 +13,50 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MIN_TOUCH, colors, fontSize, radius, spacing } from '../theme/theme';
 
-const STORAGE_KEY = 'docexplainsg.privacyAccepted';
+const CONSENT_KEY = 'docexplainsg.consent';
+// Bump when the notice's substance changes — that re-prompts existing users.
+const CONSENT_VERSION = '1';
 
 /**
- * First-run privacy notice. Shown once (until accepted), it explains in plain
- * language what happens to the user's document — including the free-tier
- * data-usage caveat — before they upload anything. Persisted via AsyncStorage.
+ * First-run consent gate. Explains in plain language what happens to the user's
+ * document, then requires an explicit tap-to-agree before anything can be
+ * uploaded. The recorded consent (version + ISO timestamp) is persisted via
+ * AsyncStorage; a version bump re-prompts. The modal covers the app, so upload
+ * is blocked until consent is given.
  */
 export function PrivacyNotice() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  // Start hidden; only reveal if we confirm it hasn't been accepted, so it
-  // never flashes for returning users.
+  // Start hidden; only reveal once we confirm consent is missing/outdated, so
+  // it never flashes for users who have already agreed.
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((v) => {
-        if (v !== 'true') setVisible(true);
+    AsyncStorage.getItem(CONSENT_KEY)
+      .then((raw) => {
+        let current = false;
+        if (raw) {
+          try {
+            current = JSON.parse(raw).version === CONSENT_VERSION;
+          } catch {
+            current = false;
+          }
+        }
+        if (!current) setVisible(true);
       })
       .catch(() => setVisible(true));
   }, []);
 
   const accept = () => {
     setVisible(false);
-    AsyncStorage.setItem(STORAGE_KEY, 'true').catch(() => {
+    // Record what they consented to and when — for accountability (PDPA).
+    AsyncStorage.setItem(
+      CONSENT_KEY,
+      JSON.stringify({
+        version: CONSENT_VERSION,
+        acceptedAt: new Date().toISOString(),
+      }),
+    ).catch(() => {
       /* non-fatal: notice will show again next launch */
     });
   };
@@ -68,6 +87,7 @@ export function PrivacyNotice() {
           </View>
         </ScrollView>
 
+        <Text style={styles.consentLine}>{t('privacy.consentLine')}</Text>
         <Pressable
           onPress={accept}
           accessibilityRole="button"
@@ -115,6 +135,13 @@ const styles = StyleSheet.create({
     lineHeight: fontSize.body * 1.5,
     fontWeight: '600',
   },
+  consentLine: {
+    fontSize: fontSize.caption,
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: spacing.md,
+    lineHeight: fontSize.caption * 1.5,
+  },
   btn: {
     minHeight: MIN_TOUCH + 12,
     backgroundColor: colors.primary,
@@ -122,7 +149,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.md,
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
   },
   btnPressed: { opacity: 0.85 },
   btnLabel: {
