@@ -76,6 +76,7 @@ The API key is **never** hardcoded and never returned by any endpoint.
 | ------ | ---- | ------- |
 | `GET`  | `/api/health` | Liveness; reports whether a key is configured. |
 | `POST` | `/api/analyze` | Analyse a document. `multipart/form-data`: one or more `files` + a `language` field (`en`/`zh`/`ms`/`ta`). Returns the structured `AnalysisResult`. |
+| `POST` | `/api/ask` | Follow-up Q&A. JSON `{ document_context, question, language }`. Answers **only** from the context; says so if the answer isn't there. Returns `{ answer }`. |
 
 Supported uploads: JPG, PNG, WEBP, HEIC, and PDF (text-based **or** scanned).
 Caps: `MAX_FILES` files, `MAX_UPLOAD_MB` total. Errors are friendly and never
@@ -189,23 +190,59 @@ A first-run privacy notice and in-app disclaimers are added in Phase 6.
 - [x] **Phase 4 — Multilingual.** Persistent language selector (en/zh/ms/ta)
       driving both UI chrome (i18next) and AI output language; choice remembered
       across launches; localized result labels, urgency, and document types.
-- [ ] Phase 5 — Accessibility & error states.
-- [ ] Phase 6 — Polish & privacy (first-run notice, disclaimers).
-- [ ] Phase 7 — Stretch (`/api/ask`, share/save summary as PDF).
+- [x] **Phase 5 — Accessibility & error states.** Screen-reader grouping +
+      labels (banner/deadlines/actions as single elements, decorative icons
+      hidden), localized empty state + inline error with retry, font-scale-safe
+      wrapping.
+- [x] **Phase 6 — Polish & privacy.** Localized first-run privacy notice
+      (persisted, states the free-tier caveat), disclaimers surfaced, README
+      finalized with production notes.
+- [x] **Phase 7 — Stretch.** `/api/ask` grounded follow-up Q&A (answers only
+      from the document, refuses to fabricate) wired into the Result screen, and
+      share/save the summary as a PDF (expo-print + expo-sharing).
 
 ---
 
-## Assumptions & known limitations (Phase 1)
+## Assumptions & known limitations
 
-- **Default model `gemini-3.5-flash`** per spec; the exact model string,
-  vision support, and structured-JSON mechanism are verified against current
-  Google AI docs in Phase 2 (not from memory).
+- **Default model `gemini-3.5-flash`** per spec; model string, vision support,
+  and the structured-JSON mechanism were verified against current Google AI docs
+  / the installed `google-genai` SDK (not from memory).
 - **Expo SDK 54** (not the latest SDK 56). SDK 56 bundles cleanly but the App
   Store / Play Store Expo Go client only supports up to 54, so it's pinned to 54
   for on-device testing without a custom build.
 - **npm peer-dependency conflict.** Some Expo optional peer ranges trip npm's
   strict resolver; `app/.npmrc` sets `legacy-peer-deps=true` so `npm install`
-  and `expo install` just work. Documented so it isn't a surprise.
-- The Home screen's capture buttons are placeholders until Phase 3.
+  and `expo install` just work.
+- **Free Gemini tier trains on submitted data** — the app is a demo for the
+  synthetic `samples/` only (see Privacy above). This is the #1 launch blocker.
+- **Latency**: a typical analysis is ~4–10s; Gemini's free tier occasionally
+  returns transient `503` (handled with one retry, then a friendly error). The
+  reasoning depth is left at the model default.
+- **Camera** uses `expo-image-picker`'s system camera (not a custom
+  `expo-camera` UI). The "Your document" view shows uploaded image thumbnails;
+  a true extracted-text toggle would require returning the text from the API.
 - No user accounts, history, payments, push notifications, or offline AI (all
   explicitly out of MVP scope).
+
+---
+
+## What I'd do next for production
+
+1. **Privacy first (blocker):** move off the free tier to a paid Gemini /
+   Vertex AI endpoint with a no-training guarantee (or self-host), and run a
+   formal **PDPA review**. Only then accept real user documents.
+2. **Hardening:** rate limiting, request size/timeout tuning, structured
+   metadata logging + monitoring, and a proper deployment (containerised API
+   behind HTTPS, secrets in a vault).
+3. **Quality:** an evaluation set of real-world (consented) document types with
+   automated checks that deadlines/amounts are never invented; tune the prompt
+   and `thinking_level` per latency/quality targets; add streaming for
+   perceived speed.
+4. **App distribution:** EAS development/production builds for iOS & Android
+   (enables a custom camera, HEIC handling, and store release).
+5. **Trust features:** a true original-text vs explanation toggle (needs the API
+   to return the extracted text). Follow-up Q&A and share-as-PDF are already in
+   (Phase 7).
+6. **Accessibility:** device testing with VoiceOver/TalkBack at 200% font scale,
+   and dynamic-type audits on real hardware.

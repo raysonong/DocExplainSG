@@ -70,40 +70,73 @@ export default function ReviewScreen() {
         })}
       </Text>
 
-      <View style={styles.grid}>
-        {files.map((file) => (
-          <View key={file.uri} style={styles.thumbWrap}>
-            {file.isPdf ? (
-              <View style={[styles.thumb, styles.pdfThumb]}>
-                <Text style={styles.pdfIcon}>📄</Text>
-                <Text numberOfLines={2} style={styles.pdfName}>
-                  {file.name}
+      {files.length === 0 ? (
+        <Text style={styles.empty}>{t('review.empty')}</Text>
+      ) : (
+        <View style={styles.grid}>
+          {files.map((file) => (
+            <View key={file.uri} style={styles.thumbWrap}>
+              {file.isPdf ? (
+                <View
+                  style={[styles.thumb, styles.pdfThumb]}
+                  accessible
+                  accessibilityLabel={file.name}
+                >
+                  <Text style={styles.pdfIcon} importantForAccessibility="no">
+                    📄
+                  </Text>
+                  <Text numberOfLines={2} style={styles.pdfName}>
+                    {file.name}
+                  </Text>
+                </View>
+              ) : (
+                <Image
+                  source={{ uri: file.uri }}
+                  style={styles.thumb}
+                  accessible
+                  accessibilityLabel={file.name}
+                />
+              )}
+              <Pressable
+                onPress={() => removeFile(file.uri)}
+                accessibilityRole="button"
+                accessibilityLabel={t('review.remove', { name: file.name })}
+                style={styles.removeBtn}
+              >
+                <Text style={styles.removeIcon} importantForAccessibility="no">
+                  ✕
                 </Text>
-              </View>
-            ) : (
-              <Image source={{ uri: file.uri }} style={styles.thumb} />
-            )}
-            <Pressable
-              onPress={() => removeFile(file.uri)}
-              accessibilityRole="button"
-              accessibilityLabel={t('review.remove', { name: file.name })}
-              style={styles.removeBtn}
-            >
-              <Text style={styles.removeIcon}>✕</Text>
-            </Pressable>
-          </View>
-        ))}
-      </View>
+              </Pressable>
+            </View>
+          ))}
+        </View>
+      )}
 
       <View style={styles.addRow}>
-        <AddChip label={`📷 ${t('review.addCamera')}`} onPress={() => addMore('camera')} />
-        <AddChip label={`🖼️ ${t('review.addGallery')}`} onPress={() => addMore('gallery')} />
-        <AddChip label={`📄 ${t('review.addPdf')}`} onPress={() => addMore('pdf')} />
+        <AddChip
+          emoji="📷"
+          label={t('review.addCamera')}
+          onPress={() => addMore('camera')}
+        />
+        <AddChip
+          emoji="🖼️"
+          label={t('review.addGallery')}
+          onPress={() => addMore('gallery')}
+        />
+        <AddChip emoji="📄" label={t('review.addPdf')} onPress={() => addMore('pdf')} />
       </View>
 
       {mutation.isError && (
         <View style={styles.errorBox} accessibilityLiveRegion="assertive">
           <Text style={styles.errorText}>{errorMessage(mutation.error, t)}</Text>
+          <Pressable
+            onPress={() => mutation.mutate()}
+            accessibilityRole="button"
+            accessibilityLabel={t('review.retry')}
+            style={({ pressed }) => [styles.retryBtn, pressed && styles.chipPressed]}
+          >
+            <Text style={styles.retryLabel}>{t('review.retry')}</Text>
+          </Pressable>
         </View>
       )}
 
@@ -146,7 +179,15 @@ function errorMessage(
   return t('review.errorGeneric');
 }
 
-function AddChip({ label, onPress }: { label: string; onPress: () => void }) {
+function AddChip({
+  emoji,
+  label,
+  onPress,
+}: {
+  emoji: string;
+  label: string;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       onPress={onPress}
@@ -154,7 +195,10 @@ function AddChip({ label, onPress }: { label: string; onPress: () => void }) {
       accessibilityLabel={label}
       style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}
     >
-      <Text style={styles.chipLabel}>{label}</Text>
+      <Text style={styles.chipLabel}>
+        <Text importantForAccessibility="no">{emoji} </Text>
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -180,6 +224,12 @@ const styles = StyleSheet.create({
   busyText: { fontSize: fontSize.title, fontWeight: '700', color: colors.text },
   busySub: { fontSize: fontSize.body, color: colors.textMuted },
   heading: { fontSize: fontSize.title, fontWeight: '700', color: colors.text },
+  empty: {
+    fontSize: fontSize.body,
+    color: colors.textMuted,
+    lineHeight: fontSize.body * 1.5,
+    paddingVertical: spacing.md,
+  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -234,6 +284,16 @@ const styles = StyleSheet.create({
     borderColor: colors.urgentFg,
   },
   errorText: { color: colors.urgentFg, fontSize: fontSize.body },
+  retryBtn: {
+    marginTop: spacing.md,
+    minHeight: MIN_TOUCH,
+    alignSelf: 'flex-start',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.pill,
+    backgroundColor: colors.urgentFg,
+  },
+  retryLabel: { color: '#fff', fontSize: fontSize.body, fontWeight: '800' },
   primary: {
     minHeight: MIN_TOUCH + 12,
     backgroundColor: colors.primary,

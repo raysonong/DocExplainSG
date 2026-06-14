@@ -70,6 +70,41 @@ export async function analyzeDocument(
   return (await resp.json()) as AnalysisResult;
 }
 
+export async function askQuestion(
+  documentContext: string,
+  question: string,
+  language: AppLanguage,
+): Promise<string> {
+  let resp: Response;
+  try {
+    resp = await fetch(`${API_BASE}/api/ask`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        document_context: documentContext,
+        question,
+        language,
+      }),
+    });
+  } catch {
+    throw new ApiError(`Could not reach the server at ${API_BASE}.`);
+  }
+
+  if (!resp.ok) {
+    let detail = `Request failed (${resp.status}).`;
+    try {
+      const body = await resp.json();
+      if (body?.detail) detail = body.detail;
+    } catch {
+      /* keep generic message */
+    }
+    throw new ApiError(detail, resp.status);
+  }
+
+  const body = (await resp.json()) as { answer: string };
+  return body.answer;
+}
+
 export async function checkHealth(): Promise<boolean> {
   try {
     const resp = await fetch(`${API_BASE}/api/health`);

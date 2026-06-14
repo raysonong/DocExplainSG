@@ -20,6 +20,8 @@ from app.schemas import AnalysisResult, Language
 from app.services.extraction import ExtractedInputs
 from app.services.prompts import (
     DISCLAIMERS,
+    build_ask_prompt,
+    build_ask_system_instruction,
     build_system_instruction,
     build_task_prompt,
 )
@@ -109,3 +111,43 @@ async def analyze(inputs: ExtractedInputs, language: Language) -> AnalysisResult
             )
 
     raise AnalysisError("The document could not be analysed.") from last_error
+
+
+async def ask(document_context: str, question: str, language: Language) -> str:
+    """Answer a follow-up question, grounded only in the given context."""
+    settings = get_settings()
+    client = _get_client()
+    config = types.GenerateContentConfig(
+        system_instruction=build_ask_system_instruction(language),
+        temperature=0.2,
+    )
+    contents = [build_ask_prompt(document_context, question)]
+
+    last_error: Exception | None = None
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
+        try:
+            response = await client.aio.models.generate_content(
+                model=settings.gemini_model,
+                contents=contents,
+                config=config,
+            )
+            text = (response.text or "").strip()
+            if not text:
+                raise AnalysisError("Empty answer from the model.")
+            logger.info(
+                "ask ok model=%s lang=%s attempt=%d",
+                settings.gemini_model,
+                language.value,
+                attempt,
+            )
+            return text
+        except Exception as exc:  # noqa: BLE001 - normalise to AnalysisError
+            last_error = exc
+            logger.warning(
+                "ask attempt %d/%d failed: %s",
+                attempt,
+                _MAX_ATTEMPTS,
+                type(exc).__name__,
+            )
+
+    raise AnalysisError("The question could not be answered.") from last_error

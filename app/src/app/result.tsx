@@ -1,11 +1,26 @@
+import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Collapsible } from '../components/Collapsible';
+import { askQuestion } from '../lib/api';
 import { urgencyPresentation } from '../lib/display';
+import { ShareUnavailableError, shareSummaryPdf } from '../lib/share';
 import { useAnalysis } from '../store/analysis';
+import { useLanguage } from '../store/language';
 import { MIN_TOUCH, colors, fontSize, radius, spacing } from '../theme/theme';
 
 /**
@@ -16,7 +31,33 @@ export default function ResultScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
+  const { language } = useLanguage();
   const { result, files, reset } = useAnalysis();
+  const [question, setQuestion] = useState('');
+
+  // The grounding context for follow-up questions is the result itself.
+  const context = useMemo(
+    () => (result ? JSON.stringify(result) : ''),
+    [result],
+  );
+
+  const askMutation = useMutation({
+    mutationFn: (q: string) => askQuestion(context, q, language),
+  });
+
+  const onShare = async () => {
+    if (!result) return;
+    try {
+      await shareSummaryPdf(result, t);
+    } catch (err) {
+      Alert.alert(
+        '',
+        err instanceof ShareUnavailableError
+          ? t('share.unavailable')
+          : t('share.error'),
+      );
+    }
+  };
 
   const startOver = () => {
     reset();
@@ -59,12 +100,15 @@ export default function ResultScreen() {
         </Text>
       </View>
 
-      {/* Urgency banner — icon + text + colour */}
+      {/* Urgency banner — icon + text + colour (read as one element) */}
       <View
         style={[styles.banner, { backgroundColor: urgency.bg }]}
+        accessible
         accessibilityLabel={t('result.status', { label: t(urgency.labelKey) })}
       >
-        <Text style={styles.bannerIcon}>{urgency.icon}</Text>
+        <Text style={styles.bannerIcon} importantForAccessibility="no">
+          {urgency.icon}
+        </Text>
         <Text style={[styles.bannerText, { color: urgency.fg }]}>
           {t(urgency.labelKey)}
         </Text>
@@ -77,8 +121,12 @@ export default function ResultScreen() {
             <View
               key={`${d.date}-${i}`}
               style={[styles.deadlineRow, d.is_urgent && styles.deadlineUrgent]}
+              accessible
+              accessibilityLabel={`${d.is_urgent ? t('urgency.high') + '. ' : ''}${d.date}. ${d.description}`}
             >
-              <Text style={styles.deadlineIcon}>{d.is_urgent ? '⚠️' : '📅'}</Text>
+              <Text style={styles.deadlineIcon} importantForAccessibility="no">
+                {d.is_urgent ? '⚠️' : '📅'}
+              </Text>
               <View style={styles.flex1}>
                 <Text style={styles.deadlineDate}>{d.date}</Text>
                 <Text style={styles.deadlineDesc}>{d.description}</Text>
@@ -96,17 +144,24 @@ export default function ResultScreen() {
               a.linked_deadline_index != null
                 ? result.deadlines[a.linked_deadline_index]
                 : undefined;
+            const meta = [
+              a.amount ? t('result.amount', { amount: a.amount }) : '',
+              linked ? t('result.by', { date: linked.date }) : '',
+            ].filter(Boolean);
             return (
-              <View key={i} style={styles.actionRow}>
-                <Text style={styles.actionBullet}>☐</Text>
+              <View
+                key={i}
+                style={styles.actionRow}
+                accessible
+                accessibilityLabel={[a.description, ...meta].join('. ')}
+              >
+                <Text style={styles.actionBullet} importantForAccessibility="no">
+                  ☐
+                </Text>
                 <View style={styles.flex1}>
                   <Text style={styles.actionText}>{a.description}</Text>
-                  {(a.amount || linked) && (
-                    <Text style={styles.actionMeta}>
-                      {a.amount ? t('result.amount', { amount: a.amount }) : ''}
-                      {a.amount && linked ? '   ·   ' : ''}
-                      {linked ? t('result.by', { date: linked.date }) : ''}
-                    </Text>
+                  {meta.length > 0 && (
+                    <Text style={styles.actionMeta}>{meta.join('   ·   ')}</Text>
                   )}
                 </View>
               </View>
@@ -164,8 +219,56 @@ export default function ResultScreen() {
         </Collapsible>
       )}
 
+      {/* Follow-up Q&A — grounded in this result */}
+      <Section title={t('ask.title')}>
+        <TextInput
+          style={styles.input}
+          placeholder={t('ask.placeholder')}
+          placeholderTextColor={colors.textMuted}
+          value={question}
+          onChangeText={setQuestion}
+          multiline
+          accessibilityLabel={t('ask.title')}
+        />
+        <Pressable
+          onPress={() => askMutation.mutate(question.trim())}
+          disabled={question.trim().length === 0 || askMutation.isPending}
+          accessibilityRole="button"
+          accessibilityLabel={t('ask.send')}
+          style={({ pressed }) => [
+            styles.askBtn,
+            (question.trim().length === 0 || askMutation.isPending) &&
+              styles.primaryDisabled,
+            pressed && styles.primaryPressed,
+          ]}
+        >
+          {askMutation.isPending ? (
+            <ActivityIndicator color={colors.onPrimary} />
+          ) : (
+            <Text style={styles.askBtnLabel}>{t('ask.send')}</Text>
+          )}
+        </Pressable>
+        {askMutation.isError && (
+          <Text style={styles.askError}>{t('ask.error')}</Text>
+        )}
+        {askMutation.data && (
+          <View style={styles.answerBox} accessibilityLiveRegion="polite">
+            <Text style={styles.answerText}>{askMutation.data}</Text>
+          </View>
+        )}
+      </Section>
+
       {/* Disclaimer pinned near the bottom */}
       <Text style={styles.disclaimer}>{result.disclaimer}</Text>
+
+      <Pressable
+        onPress={onShare}
+        accessibilityRole="button"
+        accessibilityLabel={t('share.button')}
+        style={({ pressed }) => [styles.shareBtn, pressed && styles.primaryPressed]}
+      >
+        <Text style={styles.shareBtnLabel}>{t('share.button')}</Text>
+      </Pressable>
 
       <Pressable
         onPress={startOver}
@@ -280,4 +383,41 @@ const styles = StyleSheet.create({
   },
   primaryPressed: { opacity: 0.85 },
   primaryLabel: { color: colors.onPrimary, fontSize: fontSize.title, fontWeight: '800' },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    fontSize: fontSize.body,
+    color: colors.text,
+    minHeight: MIN_TOUCH + 16,
+    textAlignVertical: 'top',
+  },
+  askBtn: {
+    minHeight: MIN_TOUCH,
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+  },
+  askBtnLabel: { color: colors.onPrimary, fontSize: fontSize.body, fontWeight: '800' },
+  primaryDisabled: { backgroundColor: colors.border },
+  askError: { color: colors.urgentFg, fontSize: fontSize.body },
+  answerBox: {
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.md,
+    padding: spacing.md,
+  },
+  answerText: { fontSize: fontSize.body, color: colors.text, lineHeight: fontSize.body * 1.5 },
+  shareBtn: {
+    minHeight: MIN_TOUCH + 12,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+  },
+  shareBtnLabel: { color: colors.primaryDark, fontSize: fontSize.title, fontWeight: '800' },
 });

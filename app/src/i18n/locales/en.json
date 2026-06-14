@@ -1,6 +1,14 @@
 {
   "lang": { "en": "English", "zh": "中文", "ms": "Bahasa Melayu", "ta": "தமிழ்" },
   "title": { "review": "Review document", "result": "Explanation" },
+  "privacy": {
+    "title": "Your privacy",
+    "p1": "Your document is sent to Google Gemini to create the explanation.",
+    "p2": "Nothing is stored. It is processed once and then discarded — no account, no history, and we do not log its contents.",
+    "p3": "This explanation is an aid, not official or legal advice.",
+    "warning": "This demo uses Google's free Gemini tier, which may use submitted data to improve Google's products. Please don't upload real sensitive documents yet — use the sample documents for now.",
+    "accept": "I understand — continue"
+  },
   "home": {
     "tagline": "Understand your official letters in plain language.",
     "takePhoto": "Take photo",
@@ -21,7 +29,9 @@
     "readingSub": "This usually takes a few seconds.",
     "errorGeneric": "Something went wrong. Please try again.",
     "errorNetwork": "Could not reach the server. Check your connection and that the backend is running.",
-    "remove": "Remove {{name}}"
+    "remove": "Remove {{name}}",
+    "empty": "No pages yet. Add a photo or PDF below to get started.",
+    "retry": "Try again"
   },
   "result": {
     "from": "From: {{issuer}}",
@@ -37,6 +47,18 @@
     "by": "By: {{date}}",
     "noExplanation": "No explanation to show.",
     "status": "Status: {{label}}"
+  },
+  "ask": {
+    "title": "Ask a question",
+    "placeholder": "e.g. What happens if I miss the deadline?",
+    "send": "Ask",
+    "thinking": "Thinking…",
+    "error": "Couldn't answer that. Please try again."
+  },
+  "share": {
+    "button": "Share summary (PDF)",
+    "error": "Couldn't create the PDF. Please try again.",
+    "unavailable": "Sharing isn't available on this device."
   },
   "urgency": {
     "high": "Urgent — action needed soon",

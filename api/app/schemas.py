@@ -135,6 +135,20 @@ class AnalysisResult(BaseModel):
     )
 
 
+class AskRequest(BaseModel):
+    """Follow-up question about an already-analysed document."""
+
+    # The explanation/context the answer must be grounded in (the client sends
+    # the AnalysisResult it received). The model must not go beyond this.
+    document_context: str = Field(min_length=1)
+    question: str = Field(min_length=1, max_length=1000)
+    language: Language = Language.EN
+
+
+class AskResponse(BaseModel):
+    answer: str
+
+
 class ErrorResponse(BaseModel):
     """Uniform, client-safe error body (never leaks internals)."""
 

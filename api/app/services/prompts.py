@@ -63,6 +63,29 @@ def build_system_instruction() -> str:
     )
 
 
+def build_ask_system_instruction(target_language: Language) -> str:
+    """Standing rules for follow-up Q&A — grounded, no fabrication."""
+    language_name = LANGUAGE_NAMES[target_language]
+    return (
+        "You are DocExplainSG answering a follow-up question about a document. "
+        "Answer ONLY using the provided document context. Do NOT use outside "
+        "knowledge, and do NOT invent facts, dates, amounts, or consequences. "
+        "If the answer is not in the context, say clearly that the document does "
+        "not say, and suggest contacting the issuing agency. Keep the answer "
+        f"short and in plain language. Write the answer in {language_name}."
+    )
+
+
+def build_ask_prompt(document_context: str, question: str) -> str:
+    """Per-request payload: the grounding context and the user's question."""
+    return (
+        "=== DOCUMENT CONTEXT (the only source you may use) ===\n"
+        f"{document_context}\n\n"
+        "=== QUESTION ===\n"
+        f"{question}"
+    )
+
+
 def build_task_prompt(target_language: Language, today_iso: str) -> str:
     """Per-request instruction: which language to write in and today's date."""
     language_name = LANGUAGE_NAMES[target_language]

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { PrivacyNotice } from '../components/PrivacyNotice';
 import '../i18n'; // initialise i18next (side effect)
 import { AnalysisProvider } from '../store/analysis';
 import { LanguageProvider } from '../store/language';
@@ -44,6 +45,7 @@ export default function RootLayout() {
             <AnalysisProvider>
               <StatusBar style="dark" />
               <Navigation />
+              <PrivacyNotice />
             </AnalysisProvider>
           </LanguageProvider>
         </QueryClientProvider>

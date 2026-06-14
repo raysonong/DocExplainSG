@@ -97,3 +97,32 @@ def test_analyze_rejects_unsupported_file(mock_gemini):
         data={"language": "en"},
     )
     assert resp.status_code == 415
+
+
+@pytest.fixture
+def mock_ask(monkeypatch):
+    async def _fake_ask(document_context, question, language):
+        return f"[{language.value}] grounded answer"
+
+    monkeypatch.setattr("app.routers.analyze.ask", _fake_ask)
+
+
+def test_ask_happy_path(mock_ask):
+    resp = client.post(
+        "/api/ask",
+        json={
+            "document_context": "Tax due 14 July 2026, S$1,950.",
+            "question": "When is it due?",
+            "language": "en",
+        },
+    )
+    assert resp.status_code == 200
+    assert resp.json()["answer"] == "[en] grounded answer"
+
+
+def test_ask_validates_empty_question(mock_ask):
+    resp = client.post(
+        "/api/ask",
+        json={"document_context": "ctx", "question": "", "language": "en"},
+    )
+    assert resp.status_code == 422  # pydantic min_length

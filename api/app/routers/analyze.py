@@ -11,9 +11,9 @@ import logging
 from fastapi import APIRouter, Form, HTTPException, UploadFile, status
 
 from app.config import get_settings
-from app.schemas import AnalysisResult, Language
+from app.schemas import AnalysisResult, AskRequest, AskResponse, Language
 from app.services import extraction
-from app.services.gemini import AnalysisError, analyze
+from app.services.gemini import AnalysisError, analyze, ask
 
 logger = logging.getLogger(__name__)
 
@@ -107,4 +107,22 @@ async def analyze_document(
                 "We couldn't analyse this document right now. Please try again in "
                 "a moment."
             ),
+        )
+
+
+@router.post(
+    "/ask",
+    response_model=AskResponse,
+    tags=["analyze"],
+    summary="Ask a follow-up question about an analysed document.",
+)
+async def ask_question(req: AskRequest) -> AskResponse:
+    logger.info("ask request lang=%s q_len=%d", req.language.value, len(req.question))
+    try:
+        answer = await ask(req.document_context, req.question, req.language)
+        return AskResponse(answer=answer)
+    except AnalysisError:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="We couldn't answer that right now. Please try again in a moment.",
         )

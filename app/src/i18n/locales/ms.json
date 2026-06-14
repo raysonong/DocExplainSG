@@ -1,6 +1,14 @@
 {
   "lang": { "en": "English", "zh": "中文", "ms": "Bahasa Melayu", "ta": "தமிழ்" },
   "title": { "review": "Semak dokumen", "result": "Penjelasan" },
+  "privacy": {
+    "title": "Privasi anda",
+    "p1": "Dokumen anda dihantar kepada Google Gemini untuk menghasilkan penjelasan.",
+    "p2": "Tiada apa-apa disimpan. Ia diproses sekali sahaja kemudian dibuang — tiada akaun, tiada sejarah, dan kami tidak merekod kandungannya.",
+    "p3": "Penjelasan ini adalah bantuan, bukan nasihat rasmi atau undang-undang.",
+    "warning": "Demo ini menggunakan peringkat percuma Gemini Google, yang mungkin menggunakan data yang dihantar untuk menambah baik produk Google. Sila jangan muat naik dokumen sensitif sebenar buat masa ini — gunakan dokumen contoh dahulu.",
+    "accept": "Saya faham — teruskan"
+  },
   "home": {
     "tagline": "Fahami surat rasmi anda dalam bahasa yang mudah.",
     "takePhoto": "Ambil foto",
@@ -21,7 +29,9 @@
     "readingSub": "Ini biasanya mengambil masa beberapa saat.",
     "errorGeneric": "Sesuatu telah berlaku. Sila cuba lagi.",
     "errorNetwork": "Tidak dapat menghubungi pelayan. Periksa sambungan anda dan pastikan backend sedang berjalan.",
-    "remove": "Buang {{name}}"
+    "remove": "Buang {{name}}",
+    "empty": "Tiada halaman lagi. Tambah foto atau PDF di bawah untuk bermula.",
+    "retry": "Cuba lagi"
   },
   "result": {
     "from": "Daripada: {{issuer}}",
@@ -37,6 +47,18 @@
     "by": "Sebelum: {{date}}",
     "noExplanation": "Tiada penjelasan untuk dipaparkan.",
     "status": "Status: {{label}}"
+  },
+  "ask": {
+    "title": "Tanya soalan",
+    "placeholder": "cth. Apa berlaku jika saya terlepas tarikh akhir?",
+    "send": "Tanya",
+    "thinking": "Sedang berfikir…",
+    "error": "Tidak dapat menjawab. Sila cuba lagi."
+  },
+  "share": {
+    "button": "Kongsi ringkasan (PDF)",
+    "error": "Tidak dapat membuat PDF. Sila cuba lagi.",
+    "unavailable": "Perkongsian tidak tersedia pada peranti ini."
   },
   "urgency": {
     "high": "Penting — tindakan diperlukan segera",

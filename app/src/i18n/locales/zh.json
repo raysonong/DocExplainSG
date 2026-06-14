@@ -1,6 +1,14 @@
 {
   "lang": { "en": "English", "zh": "中文", "ms": "Bahasa Melayu", "ta": "தமிழ்" },
   "title": { "review": "查看文件", "result": "解释" },
+  "privacy": {
+    "title": "您的隐私",
+    "p1": "您的文件会发送给 Google Gemini 以生成说明。",
+    "p2": "我们不会保存任何内容。文件只会被处理一次，然后立即删除——没有账户、没有历史记录，也不会记录文件内容。",
+    "p3": "本说明仅供参考，并非官方或法律建议。",
+    "warning": "此演示使用 Google 免费的 Gemini 服务，提交的数据可能被用于改进 Google 的产品。请暂时不要上传真实的敏感文件——目前请使用示例文件。",
+    "accept": "我明白了 — 继续"
+  },
   "home": {
     "tagline": "用简单易懂的语言看懂您的官方信件。",
     "takePhoto": "拍照",
@@ -21,7 +29,9 @@
     "readingSub": "通常需要几秒钟。",
     "errorGeneric": "出了点问题，请再试一次。",
     "errorNetwork": "无法连接服务器。请检查您的网络以及后端是否在运行。",
-    "remove": "移除 {{name}}"
+    "remove": "移除 {{name}}",
+    "empty": "还没有页面。请在下方添加照片或 PDF 开始。",
+    "retry": "重试"
   },
   "result": {
     "from": "来自：{{issuer}}",
@@ -37,6 +47,18 @@
     "by": "期限：{{date}}",
     "noExplanation": "没有可显示的解释。",
     "status": "状态：{{label}}"
+  },
+  "ask": {
+    "title": "提出问题",
+    "placeholder": "例如：如果我错过截止日期会怎样？",
+    "send": "提问",
+    "thinking": "思考中…",
+    "error": "无法回答，请再试一次。"
+  },
+  "share": {
+    "button": "分享摘要（PDF）",
+    "error": "无法生成 PDF，请再试一次。",
+    "unavailable": "此设备不支持分享。"
   },
   "urgency": {
     "high": "紧急 — 需尽快处理",

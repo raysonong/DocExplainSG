@@ -188,6 +188,8 @@ const styles = StyleSheet.create({
     fontSize: fontSize.title,
     fontWeight: '700',
     color: colors.primaryDark,
+    // Wrap (don't overflow) for long translations / large font scales.
+    flexShrink: 1,
   },
   note: {
     fontSize: fontSize.caption,
