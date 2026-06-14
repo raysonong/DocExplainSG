@@ -1,0 +1,35 @@
+[project]
+name = "docexplainsg-api"
+version = "0.1.0"
+description = "DocExplainSG backend — plain-language explainer for Singapore government & financial documents."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    # Web framework + ASGI server
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    # Schemas & config
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    # Multipart form parsing for file uploads
+    "python-multipart>=0.0.12",
+    # PDF text extraction (Phase 2)
+    "pypdf>=5.1",
+    "pdfplumber>=0.11",
+    # Google Gemini API (Phase 2)
+    "google-genai>=0.3",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.27",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    # Used only to generate the synthetic sample PDFs in /samples.
+    "fpdf2>=2.8",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["."]
+testpaths = ["tests"]

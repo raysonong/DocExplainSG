@@ -1,0 +1,57 @@
+{
+  "lang": { "en": "English", "zh": "中文", "ms": "Bahasa Melayu", "ta": "தமிழ்" },
+  "title": { "review": "Review document", "result": "Explanation" },
+  "home": {
+    "tagline": "Understand your official letters in plain language.",
+    "takePhoto": "Take photo",
+    "choosePhoto": "Choose photo",
+    "choosePdf": "Choose PDF",
+    "privacyNote": "Nothing you upload is stored. Your document is read once to explain it, then discarded.",
+    "chooseLanguage": "Choose language"
+  },
+  "review": {
+    "page": "{{count}} page selected",
+    "pages": "{{count}} pages selected",
+    "addCamera": "Camera",
+    "addGallery": "Gallery",
+    "addPdf": "PDF",
+    "explain": "Explain this",
+    "cancel": "Cancel",
+    "reading": "Reading your document…",
+    "readingSub": "This usually takes a few seconds.",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "errorNetwork": "Could not reach the server. Check your connection and that the backend is running.",
+    "remove": "Remove {{name}}"
+  },
+  "result": {
+    "from": "From: {{issuer}}",
+    "deadlines": "Deadlines",
+    "actions": "What you need to do",
+    "summary": "Summary",
+    "referenceNumbers": "Reference numbers",
+    "glossary": "What the terms mean",
+    "yourDocument": "Your document",
+    "notes": "Notes from the explainer",
+    "startOver": "Start over",
+    "amount": "Amount: {{amount}}",
+    "by": "By: {{date}}",
+    "noExplanation": "No explanation to show.",
+    "status": "Status: {{label}}"
+  },
+  "urgency": {
+    "high": "Urgent — action needed soon",
+    "medium": "Action needed",
+    "low": "For your information",
+    "none": "No action needed"
+  },
+  "docType": {
+    "cpf": "CPF",
+    "hdb": "HDB",
+    "iras": "IRAS (Tax)",
+    "mom": "MOM (Manpower)",
+    "insurance": "Insurance",
+    "town_council": "Town Council",
+    "utility": "Utility",
+    "other": "Document"
+  }
+}

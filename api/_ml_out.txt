@@ -1,0 +1,8 @@
+--- ta type=hdb urgency=medium
+title: மறுவிற்பனை வீடு வாங்குவதை நிறைவு செய்வதற்கான சந்திப்பு
+summary: இந்த ஆவணம் நீங்கள் வாங்கும் மறுவிற்பனை வீட்டின் பரிவர்த்தனையை நிறைவு செய்வதற்கான சந்திப்பு விவரங்களை உங்களுக்குத் தெரிவிக்கிறது. உங்கள் சந்த
+disclaimer: இது உங்கள் ஆவணத்தைப் புரிந்துகொள்ள உதவும் தானியங்கி விள
+--- ms type=hdb urgency=medium
+title: Janji Temu Penyelesaian Pembelian Flat Jualan Semula
+summary: Surat ini mengesahkan janji temu penyelesaian untuk pembelian flat jualan semula anda di Blk 250 Bishan Street 22, #11-145 pada 30 Julai 202
+disclaimer: Ini ialah penjelasan automatik untuk membantu anda mema

@@ -1,0 +1,57 @@
+{
+  "lang": { "en": "English", "zh": "中文", "ms": "Bahasa Melayu", "ta": "தமிழ்" },
+  "title": { "review": "查看文件", "result": "解释" },
+  "home": {
+    "tagline": "用简单易懂的语言看懂您的官方信件。",
+    "takePhoto": "拍照",
+    "choosePhoto": "选择照片",
+    "choosePdf": "选择 PDF",
+    "privacyNote": "您上传的内容不会被保存。文件仅会被读取一次以进行解释，然后立即删除。",
+    "chooseLanguage": "选择语言"
+  },
+  "review": {
+    "page": "已选择 {{count}} 页",
+    "pages": "已选择 {{count}} 页",
+    "addCamera": "拍照",
+    "addGallery": "相册",
+    "addPdf": "PDF",
+    "explain": "开始解释",
+    "cancel": "取消",
+    "reading": "正在读取您的文件…",
+    "readingSub": "通常需要几秒钟。",
+    "errorGeneric": "出了点问题，请再试一次。",
+    "errorNetwork": "无法连接服务器。请检查您的网络以及后端是否在运行。",
+    "remove": "移除 {{name}}"
+  },
+  "result": {
+    "from": "来自：{{issuer}}",
+    "deadlines": "截止日期",
+    "actions": "您需要做的事",
+    "summary": "摘要",
+    "referenceNumbers": "参考编号",
+    "glossary": "术语解释",
+    "yourDocument": "您的文件",
+    "notes": "解释说明备注",
+    "startOver": "重新开始",
+    "amount": "金额：{{amount}}",
+    "by": "期限：{{date}}",
+    "noExplanation": "没有可显示的解释。",
+    "status": "状态：{{label}}"
+  },
+  "urgency": {
+    "high": "紧急 — 需尽快处理",
+    "medium": "需要处理",
+    "low": "供您参考",
+    "none": "无需处理"
+  },
+  "docType": {
+    "cpf": "公积金 (CPF)",
+    "hdb": "建屋局 (HDB)",
+    "iras": "税务局 (IRAS)",
+    "mom": "人力部 (MOM)",
+    "insurance": "保险",
+    "town_council": "市镇理事会",
+    "utility": "公用事业账单",
+    "other": "文件"
+  }
+}

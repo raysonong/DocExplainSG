@@ -1,0 +1,57 @@
+{
+  "lang": { "en": "English", "zh": "中文", "ms": "Bahasa Melayu", "ta": "தமிழ்" },
+  "title": { "review": "Semak dokumen", "result": "Penjelasan" },
+  "home": {
+    "tagline": "Fahami surat rasmi anda dalam bahasa yang mudah.",
+    "takePhoto": "Ambil foto",
+    "choosePhoto": "Pilih foto",
+    "choosePdf": "Pilih PDF",
+    "privacyNote": "Apa yang anda muat naik tidak disimpan. Dokumen anda dibaca sekali sahaja untuk diterangkan, kemudian dibuang.",
+    "chooseLanguage": "Pilih bahasa"
+  },
+  "review": {
+    "page": "{{count}} halaman dipilih",
+    "pages": "{{count}} halaman dipilih",
+    "addCamera": "Kamera",
+    "addGallery": "Galeri",
+    "addPdf": "PDF",
+    "explain": "Terangkan ini",
+    "cancel": "Batal",
+    "reading": "Membaca dokumen anda…",
+    "readingSub": "Ini biasanya mengambil masa beberapa saat.",
+    "errorGeneric": "Sesuatu telah berlaku. Sila cuba lagi.",
+    "errorNetwork": "Tidak dapat menghubungi pelayan. Periksa sambungan anda dan pastikan backend sedang berjalan.",
+    "remove": "Buang {{name}}"
+  },
+  "result": {
+    "from": "Daripada: {{issuer}}",
+    "deadlines": "Tarikh akhir",
+    "actions": "Apa yang anda perlu buat",
+    "summary": "Ringkasan",
+    "referenceNumbers": "Nombor rujukan",
+    "glossary": "Maksud istilah",
+    "yourDocument": "Dokumen anda",
+    "notes": "Nota daripada penerang",
+    "startOver": "Mula semula",
+    "amount": "Jumlah: {{amount}}",
+    "by": "Sebelum: {{date}}",
+    "noExplanation": "Tiada penjelasan untuk dipaparkan.",
+    "status": "Status: {{label}}"
+  },
+  "urgency": {
+    "high": "Penting — tindakan diperlukan segera",
+    "medium": "Tindakan diperlukan",
+    "low": "Untuk makluman anda",
+    "none": "Tiada tindakan diperlukan"
+  },
+  "docType": {
+    "cpf": "CPF",
+    "hdb": "HDB",
+    "iras": "IRAS (Cukai)",
+    "mom": "MOM (Tenaga Kerja)",
+    "insurance": "Insurans",
+    "town_council": "Majlis Perbandaran",
+    "utility": "Utiliti",
+    "other": "Dokumen"
+  }
+}
