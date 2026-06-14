@@ -1,8 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Camera, FileText, Image as ImageIcon, Lock, type LucideIcon } from 'lucide-react-native';
-import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccessibilityInfo, Animated, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LanguageSelector } from '../components/LanguageSelector';
@@ -10,40 +9,13 @@ import { ModeSelector } from '../components/ModeSelector';
 import { Text } from '../components/ui/text';
 import { pickPdf, pickPhotos, takePhoto } from '../lib/pickers';
 import { useAnalysis } from '../store/analysis';
-import { useLanguage } from '../store/language';
 import type { SelectedFile } from '../types';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
-  const { language } = useLanguage();
   const { addFiles, clearFiles } = useAnalysis();
-
-  // Fade the tagline in when the language changes.
-  const opacity = useRef(new Animated.Value(1)).current;
-  const reduceMotion = useRef(false);
-  const firstRender = useRef(true);
-
-  useEffect(() => {
-    AccessibilityInfo.isReduceMotionEnabled().then((v) => {
-      reduceMotion.current = v;
-    });
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', (v) => {
-      reduceMotion.current = v;
-    });
-    return () => sub.remove();
-  }, []);
-
-  useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
-    if (reduceMotion.current) return;
-    opacity.setValue(0);
-    Animated.timing(opacity, { toValue: 1, duration: 450, useNativeDriver: true }).start();
-  }, [language, opacity]);
 
   const handlePress = async (action: 'camera' | 'gallery' | 'pdf') => {
     let files: SelectedFile[] = [];
@@ -75,15 +47,9 @@ export default function HomeScreen() {
           <Text className="text-center text-3xl font-extrabold text-brand">
             DocExplainSG
           </Text>
-          <Animated.View style={{ opacity }}>
-            <Text
-              accessibilityLabel={t('home.tagline')}
-              accessibilityLiveRegion="polite"
-              className="text-center text-base text-foreground"
-            >
-              {t('home.tagline')}
-            </Text>
-          </Animated.View>
+          <Text className="text-center text-base text-foreground">
+            {t('home.tagline')}
+          </Text>
         </View>
 
         <View className="gap-2">
