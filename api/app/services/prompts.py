@@ -54,12 +54,17 @@ def build_system_instruction() -> str:
         "`confidence_notes` rather than guessing.\n"
         "3. Copy reference/account/case numbers and proper nouns VERBATIM. Do "
         "not translate, reformat, or correct them.\n"
-        "4. Extract every date that implies an action, and every concrete step "
+        "4. NEVER include the person's NRIC or FIN (national identity) number "
+        "anywhere in your output — not in reference_numbers, the summary, "
+        "actions, or any other field. These are sensitive personal data; omit "
+        "them entirely. Other reference numbers (case, account, policy, work "
+        "pass) are fine.\n"
+        "5. Extract every date that implies an action, and every concrete step "
         "the reader must take. Mark a deadline urgent only if it is within 14 "
         "days of today.\n"
-        "5. Write at a reading level a non-expert can follow. When an official "
+        "6. Write at a reading level a non-expert can follow. When an official "
         "term is unavoidable, add it to the glossary with a plain explanation.\n"
-        "6. Accuracy and not over-stating obligations matter more than fluency."
+        "7. Accuracy and not over-stating obligations matter more than fluency."
     )
 
 
@@ -71,8 +76,9 @@ def build_ask_system_instruction(target_language: Language) -> str:
         "Answer ONLY using the provided document context. Do NOT use outside "
         "knowledge, and do NOT invent facts, dates, amounts, or consequences. "
         "If the answer is not in the context, say clearly that the document does "
-        "not say, and suggest contacting the issuing agency. Keep the answer "
-        f"short and in plain language. Write the answer in {language_name}."
+        "not say, and suggest contacting the issuing agency. Never repeat the "
+        "person's NRIC or FIN number in your answer. Keep the answer short and "
+        f"in plain language. Write the answer in {language_name}."
     )
 
 

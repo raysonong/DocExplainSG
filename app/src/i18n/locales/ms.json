@@ -3,10 +3,10 @@
   "title": { "review": "Semak dokumen", "result": "Penjelasan" },
   "privacy": {
     "title": "Privasi anda",
-    "p1": "Dokumen anda dihantar kepada Google Gemini untuk menghasilkan penjelasan.",
+    "p1": "Dokumen anda dihantar kepada Claude AI daripada Anthropic untuk menghasilkan penjelasan.",
     "p2": "Tiada apa-apa disimpan. Ia diproses sekali sahaja kemudian dibuang — tiada akaun, tiada sejarah, dan kami tidak merekod kandungannya.",
     "p3": "Penjelasan ini adalah bantuan, bukan nasihat rasmi atau undang-undang.",
-    "warning": "Demo ini menggunakan peringkat percuma Gemini Google, yang mungkin menggunakan data yang dihantar untuk menambah baik produk Google. Sila jangan muat naik dokumen sensitif sebenar buat masa ini — gunakan dokumen contoh dahulu.",
+    "warning": "API Claude tidak menggunakan dokumen anda untuk melatih model AI. Ini masih demo awal, dan semakan privasi penuh belum dilakukan sebelum digunakan dengan dokumen sebenar.",
     "accept": "Saya faham — teruskan"
   },
   "home": {

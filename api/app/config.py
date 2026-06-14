@@ -28,11 +28,14 @@ class Settings(BaseSettings):
     # --- App metadata ---
     app_name: str = "DocExplainSG"
 
-    # --- Gemini ---
+    # --- LLM (Anthropic Claude) ---
     # Optional at boot so that /health works without a key configured.
-    # Phase 2 endpoints will require it and fail with a clear error if missing.
-    gemini_api_key: str | None = None
-    gemini_model: str = "gemini-3.5-flash"
+    # Analysis endpoints require it and fail with a clear error if missing.
+    anthropic_api_key: str | None = None
+    # Default to Haiku 4.5: fast, low-cost, supports vision + structured output.
+    anthropic_model: str = "claude-haiku-4-5"
+    # Per-request timeout (seconds) so a stalled call fails fast instead of hanging.
+    llm_timeout_s: float = 45.0
 
     # --- Upload limits ---
     max_upload_mb: int = 20

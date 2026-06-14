@@ -120,6 +120,29 @@ def test_ask_happy_path(mock_ask):
     assert resp.json()["answer"] == "[en] grounded answer"
 
 
+def test_redact_nric_strips_identity_numbers():
+    from app.schemas import ReferenceNumber
+    from app.services.llm import _redact_nric
+
+    result = _canned_result()
+    result.summary = "Your NRIC S8412345A is on file. Pay S$1,950."
+    result.reference_numbers = [
+        ReferenceNumber(label="NRIC", value="S8412345A"),
+        ReferenceNumber(label="Case number", value="CPF/RA/2026/0098213"),
+        ReferenceNumber(label="Tax Ref", value="T8523456B"),  # value looks like NRIC/FIN
+    ]
+
+    redacted = _redact_nric(result)
+
+    assert "S8412345A" not in redacted.summary
+    assert "[NRIC redacted]" in redacted.summary
+    labels = [r.label for r in redacted.reference_numbers]
+    # NRIC entry dropped (by label) and the NRIC-shaped value dropped; case number kept.
+    assert "NRIC" not in labels
+    assert "Tax Ref" not in labels
+    assert "Case number" in labels
+
+
 def test_ask_validates_empty_question(mock_ask):
     resp = client.post(
         "/api/ask",

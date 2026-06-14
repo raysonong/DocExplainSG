@@ -14,8 +14,8 @@ def test_health_ok():
     assert body["status"] == "ok"
     assert body["app"] == "DocExplainSG"
     # Key must never be leaked; only a boolean about configuration.
-    assert isinstance(body["gemini_configured"], bool)
-    assert "gemini_api_key" not in body
+    assert isinstance(body["llm_configured"], bool)
+    assert "anthropic_api_key" not in body
 
 
 def test_root_ok():

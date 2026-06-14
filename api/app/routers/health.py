@@ -12,8 +12,8 @@ class HealthResponse(BaseModel):
     status: str
     app: str
     version: str
-    # True when a Gemini API key is configured. Does NOT expose the key.
-    gemini_configured: bool
+    # True when an Anthropic API key is configured. Does NOT expose the key.
+    llm_configured: bool
 
 
 @router.get("/health", response_model=HealthResponse, tags=["meta"])
@@ -26,5 +26,5 @@ async def health() -> HealthResponse:
         status="ok",
         app=settings.app_name,
         version=__version__,
-        gemini_configured=bool(settings.gemini_api_key),
+        llm_configured=bool(settings.anthropic_api_key),
     )

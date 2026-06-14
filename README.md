@@ -62,8 +62,9 @@ See [`api/.env.example`](api/.env.example). Key ones:
 
 | Var | Default | Purpose |
 | --- | ------- | ------- |
-| `GEMINI_API_KEY` | _(none)_ | Google Gemini key. Required for analysis (Phase 2). |
-| `GEMINI_MODEL` | `gemini-3.5-flash` | Swappable model name. |
+| `ANTHROPIC_API_KEY` | _(none)_ | Anthropic Claude key. Required for analysis. |
+| `ANTHROPIC_MODEL` | `claude-haiku-4-5` | Swappable model (`claude-sonnet-4-6`, `claude-opus-4-8`). |
+| `LLM_TIMEOUT_S` | `45` | Per-request LLM timeout (seconds). |
 | `MAX_UPLOAD_MB` | `20` | Cap on total upload size. |
 | `MAX_FILES` | `10` | Cap on files per request. |
 | `CORS_ORIGINS` | `*` | Comma-separated allowed origins. Lock down for prod. |
@@ -138,7 +139,7 @@ added, an EAS development build.
                                                         |
                                        extract text (PDF) OR read image (vision)
                                                         |
-                                          single structured LLM call (Gemini)
+                                          single structured LLM call (Claude)
                                                         |
                               <-- JSON: summary, deadlines, actions, meta ------
 [Expo app] renders the result screen in the chosen language
@@ -158,21 +159,19 @@ This app handles sensitive government/financial documents. The design rules:
 - **No content logging.** Only non-sensitive metadata (timestamps, latency,
   error codes) is logged — never document contents or extracted personal data.
 - **Minimal sharing.** Data goes only to the LLM provider needed to do the job.
-- **⚠️ Free-tier data-usage — CONFIRMED launch blocker.** Verified against
-  current Google AI docs (June 2026): on the **free** Gemini API tier, Google
-  **uses your prompts and responses to improve its products**, including human
-  review. The **paid** tier (and Vertex AI) does **not** train on your data.
-  (The EEA/Switzerland/UK get the paid-tier policy even on free.)
+- **LLM data-usage.** The app uses the **Anthropic Claude API** (`claude-haiku-4-5`
+  by default). Anthropic's **commercial API does not train on submitted prompts
+  or responses**, which is the privacy-appropriate stance for sensitive
+  government/financial documents — and resolves the data-training concern that
+  applied to the earlier free-Gemini setup. (Anthropic also offers zero-retention
+  options for stricter requirements.) A formal **PDPA review** is still required
+  before a real-user launch.
 
-  For an app sending real CPF/HDB/IRAS/insurance documents this is incompatible
-  with the no-storage stance above. **The current setup uses the free tier and
-  is therefore for development with the synthetic `samples/` only — do not send
-  real personal documents through it.** Before any real-user launch: move to a
-  paid no-training tier (or Vertex AI), and/or disclose plainly in the in-app
-  privacy notice. Switching is a config change (`GEMINI_API_KEY` /
-  `GEMINI_MODEL`); the data-policy decision is the blocker.
+A first-run privacy notice and in-app disclaimers ship in the app (Phase 6).
 
-A first-run privacy notice and in-app disclaimers are added in Phase 6.
+See **[PDPA_CHECKLIST.md](PDPA_CHECKLIST.md)** for the full obligation-by-obligation
+checklist, the pre-launch gate (DPO, DPA/ZDR, DPIA, consent, backend hardening),
+and the NRIC/FIN handling notes.
 
 ---
 

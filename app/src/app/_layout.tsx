@@ -43,7 +43,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <LanguageProvider>
             <AnalysisProvider>
-              <StatusBar style="dark" />
+              <StatusBar style="light" />
               <Navigation />
               <PrivacyNotice />
             </AnalysisProvider>

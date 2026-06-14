@@ -3,10 +3,10 @@
   "title": { "review": "Review document", "result": "Explanation" },
   "privacy": {
     "title": "Your privacy",
-    "p1": "Your document is sent to Google Gemini to create the explanation.",
+    "p1": "Your document is sent to Anthropic's Claude AI to create the explanation.",
     "p2": "Nothing is stored. It is processed once and then discarded — no account, no history, and we do not log its contents.",
     "p3": "This explanation is an aid, not official or legal advice.",
-    "warning": "This demo uses Google's free Gemini tier, which may use submitted data to improve Google's products. Please don't upload real sensitive documents yet — use the sample documents for now.",
+    "warning": "Claude's API does not use your document to train AI models. This is still an early demo, and a full privacy review is pending before use with real documents.",
     "accept": "I understand — continue"
   },
   "home": {

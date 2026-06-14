@@ -13,11 +13,25 @@ from fastapi import APIRouter, Form, HTTPException, UploadFile, status
 from app.config import get_settings
 from app.schemas import AnalysisResult, AskRequest, AskResponse, Language
 from app.services import extraction
-from app.services.gemini import AnalysisError, analyze, ask
+from app.services.llm import AnalysisError, analyze, ask
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def _llm_http_error(err: AnalysisError) -> HTTPException:
+    """Map an LLM failure to a clear, client-safe HTTP error."""
+    if err.status_code in (429, 503, 529):
+        # Rate limit or temporary overload — the client should retry later.
+        return HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="The AI service is busy right now. Please wait a moment and try again.",
+        )
+    return HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail="We couldn't process this right now. Please try again in a moment.",
+    )
 
 
 def _parse_language(value: str) -> Language:
@@ -99,15 +113,9 @@ async def analyze_document(
 
     try:
         return await analyze(inputs, target_language)
-    except AnalysisError:
+    except AnalysisError as err:
         # Already-logged; return a friendly, non-leaky error.
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=(
-                "We couldn't analyse this document right now. Please try again in "
-                "a moment."
-            ),
-        )
+        raise _llm_http_error(err)
 
 
 @router.post(
@@ -121,8 +129,5 @@ async def ask_question(req: AskRequest) -> AskResponse:
     try:
         answer = await ask(req.document_context, req.question, req.language)
         return AskResponse(answer=answer)
-    except AnalysisError:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="We couldn't answer that right now. Please try again in a moment.",
-        )
+    except AnalysisError as err:
+        raise _llm_http_error(err)

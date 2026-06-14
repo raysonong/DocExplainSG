@@ -13,11 +13,11 @@ dependencies = [
     "pydantic-settings>=2.6",
     # Multipart form parsing for file uploads
     "python-multipart>=0.0.12",
-    # PDF text extraction (Phase 2)
+    # PDF text extraction
     "pypdf>=5.1",
     "pdfplumber>=0.11",
-    # Google Gemini API (Phase 2)
-    "google-genai>=0.3",
+    # LLM — Anthropic Claude
+    "anthropic>=0.109.1",
 ]
 
 [dependency-groups]
