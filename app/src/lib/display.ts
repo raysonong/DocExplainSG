@@ -1,32 +1,32 @@
 /**
  * Presentation helpers for result data.
  *
- * Returns i18n keys (resolved with `t()` in components) plus the icon + colours.
- * Urgency is always paired with an icon + label (never colour alone) for
- * accessibility.
+ * Returns an i18n key + the shadcn Alert variant + a lucide icon for each
+ * urgency level. Urgency is always conveyed by icon + text + colour (never
+ * colour alone) for accessibility.
  */
 
-import { colors } from '../theme/theme';
+import { AlertTriangle, Bell, CheckCircle2, Info, type LucideIcon } from 'lucide-react-native';
+
 import type { Urgency } from '../types';
 
 export interface UrgencyPresentation {
-  /** i18n key under `urgency.*`. */
   labelKey: string;
-  icon: string; // emoji as an icon, paired with text + colour
-  fg: string;
-  bg: string;
+  variant: 'destructive' | 'warning' | 'info' | 'success';
+  Icon: LucideIcon;
+  iconColor: string;
 }
 
 export function urgencyPresentation(urgency: Urgency): UrgencyPresentation {
   switch (urgency) {
     case 'high':
-      return { labelKey: 'urgency.high', icon: '⚠️', fg: colors.urgentFg, bg: colors.urgentBg };
+      return { labelKey: 'urgency.high', variant: 'destructive', Icon: AlertTriangle, iconColor: '#EF4444' };
     case 'medium':
-      return { labelKey: 'urgency.medium', icon: '🔔', fg: colors.warnFg, bg: colors.warnBg };
+      return { labelKey: 'urgency.medium', variant: 'warning', Icon: Bell, iconColor: '#F59E0B' };
     case 'low':
-      return { labelKey: 'urgency.low', icon: 'ℹ️', fg: colors.primaryDark, bg: colors.surfaceAlt };
+      return { labelKey: 'urgency.low', variant: 'info', Icon: Info, iconColor: '#FAFAFA' };
     case 'none':
     default:
-      return { labelKey: 'urgency.none', icon: '✅', fg: colors.okFg, bg: colors.okBg };
+      return { labelKey: 'urgency.none', variant: 'success', Icon: CheckCircle2, iconColor: '#22C55E' };
   }
 }

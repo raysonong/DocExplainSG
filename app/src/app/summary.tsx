@@ -2,27 +2,26 @@ import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Collapsible } from '../components/Collapsible';
+import { Button } from '../components/ui/button';
+import { Collapsible } from '../components/ui/collapsible';
+import { Textarea } from '../components/ui/input';
+import { Text } from '../components/ui/text';
 import { askQuestion } from '../lib/api';
 import { useAnalysis } from '../store/analysis';
 import { useLanguage } from '../store/language';
-import { MIN_TOUCH, colors, fontSize, radius, spacing } from '../theme/theme';
 
-/**
- * Generic summary screen — renders a GenericSummary (title, summary, key points)
- * for the "summarize any document" mode. Supports the same grounded Q&A.
- */
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <View className="gap-2">
+      <Text className="text-xl font-bold text-foreground">{title}</Text>
+      <View className="gap-2">{children}</View>
+    </View>
+  );
+}
+
 export default function SummaryScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -31,185 +30,109 @@ export default function SummaryScreen() {
   const { summary, reset } = useAnalysis();
   const [question, setQuestion] = useState('');
 
-  const context = useMemo(
-    () => (summary ? JSON.stringify(summary) : ''),
-    [summary],
-  );
-
+  const context = useMemo(() => (summary ? JSON.stringify(summary) : ''), [summary]);
   const askMutation = useMutation({
     mutationFn: (q: string) => askQuestion(context, q, language),
   });
 
   const startOver = () => {
     reset();
-    // Pop back to the existing Home at the root rather than stacking a new one.
     if (router.canDismiss()) router.dismissAll();
     else router.replace('/');
   };
 
   if (!summary) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.body}>{t('result.noExplanation')}</Text>
-        <Pressable onPress={startOver} style={styles.primary}>
-          <Text style={styles.primaryLabel}>{t('result.startOver')}</Text>
-        </Pressable>
+      <View className="flex-1 items-center justify-center gap-4 bg-black px-6">
+        <Text className="text-base text-foreground">{t('result.noExplanation')}</Text>
+        <Button onPress={startOver}>
+          <Text className="text-lg font-bold text-primary-foreground">
+            {t('result.startOver')}
+          </Text>
+        </Button>
       </View>
     );
   }
 
+  const askDisabled = question.trim().length === 0 || askMutation.isPending;
+
   return (
     <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        {
-          paddingTop: insets.top + spacing.md,
-          paddingBottom: insets.bottom + spacing.xl,
-        },
-      ]}
+      className="flex-1 bg-black"
+      contentContainerStyle={{
+        flexGrow: 1,
+        paddingTop: insets.top + 16,
+        paddingBottom: insets.bottom + 24,
+        paddingHorizontal: 16,
+      }}
     >
-      <Text style={styles.title} accessibilityRole="header">
-        {summary.title}
-      </Text>
+      <View className="w-full max-w-[640px] gap-5 self-center rounded-3xl border border-border bg-[#0d0d10] p-5">
+        <Text accessibilityRole="header" className="text-2xl font-extrabold text-foreground">
+          {summary.title}
+        </Text>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t('result.summary')}</Text>
-        <Text style={styles.summary}>{summary.summary}</Text>
-      </View>
+        <Section title={t('result.summary')}>
+          <Text className="text-base leading-6 text-foreground">{summary.summary}</Text>
+        </Section>
 
-      {summary.key_points.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('result.keyPoints')}</Text>
-          {summary.key_points.map((p, i) => (
-            <View key={i} style={styles.pointRow}>
-              <Text style={styles.bullet}>•</Text>
-              <Text style={styles.pointText}>{p}</Text>
-            </View>
-          ))}
-        </View>
-      )}
+        {summary.key_points.length > 0 && (
+          <Section title={t('result.keyPoints')}>
+            {summary.key_points.map((p, i) => (
+              <View key={i} className="flex-row gap-2">
+                <Text className="text-base font-bold text-primary-strong">•</Text>
+                <Text className="flex-1 text-base leading-6 text-foreground">{p}</Text>
+              </View>
+            ))}
+          </Section>
+        )}
 
-      {summary.confidence_notes && (
-        <Collapsible title={t('result.notes')}>
-          <Text style={styles.body}>{summary.confidence_notes}</Text>
-        </Collapsible>
-      )}
+        {summary.confidence_notes && (
+          <Collapsible title={t('result.notes')}>
+            <Text className="text-base text-foreground">{summary.confidence_notes}</Text>
+          </Collapsible>
+        )}
 
-      {/* Follow-up Q&A — grounded in this summary */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t('ask.title')}</Text>
-        <TextInput
-          style={styles.input}
-          placeholder={t('ask.placeholder')}
-          placeholderTextColor={colors.textMuted}
-          value={question}
-          onChangeText={setQuestion}
-          multiline
-          accessibilityLabel={t('ask.title')}
-        />
-        <Pressable
-          onPress={() => askMutation.mutate(question.trim())}
-          disabled={question.trim().length === 0 || askMutation.isPending}
-          accessibilityRole="button"
-          accessibilityLabel={t('ask.send')}
-          style={({ pressed }) => [
-            styles.askBtn,
-            (question.trim().length === 0 || askMutation.isPending) &&
-              styles.primaryDisabled,
-            pressed && styles.primaryPressed,
-          ]}
-        >
-          {askMutation.isPending ? (
-            <ActivityIndicator color={colors.onPrimary} />
-          ) : (
-            <Text style={styles.askBtnLabel}>{t('ask.send')}</Text>
+        {/* Follow-up Q&A */}
+        <Section title={t('ask.title')}>
+          <Textarea
+            placeholder={t('ask.placeholder')}
+            value={question}
+            onChangeText={setQuestion}
+            accessibilityLabel={t('ask.title')}
+          />
+          <Button
+            size="sm"
+            disabled={askDisabled}
+            className={askDisabled ? 'opacity-50' : undefined}
+            accessibilityLabel={t('ask.send')}
+            onPress={() => askMutation.mutate(question.trim())}
+          >
+            {askMutation.isPending ? (
+              <ActivityIndicator color="#18181B" />
+            ) : (
+              <Text className="font-bold text-primary-foreground">{t('ask.send')}</Text>
+            )}
+          </Button>
+          {askMutation.isError && (
+            <Text className="text-base text-destructive">{t('ask.error')}</Text>
           )}
-        </Pressable>
-        {askMutation.isError && (
-          <Text style={styles.askError}>{t('ask.error')}</Text>
-        )}
-        {askMutation.data && (
-          <View style={styles.answerBox} accessibilityLiveRegion="polite">
-            <Text style={styles.answerText}>{askMutation.data}</Text>
-          </View>
-        )}
+          {askMutation.data && (
+            <View className="rounded-md bg-secondary p-4" accessibilityLiveRegion="polite">
+              <Text className="text-base leading-6 text-foreground">{askMutation.data}</Text>
+            </View>
+          )}
+        </Section>
+
+        <Text className="mt-1 text-xs italic leading-5 text-muted-foreground">
+          {summary.disclaimer}
+        </Text>
+
+        <Button size="lg" accessibilityLabel={t('result.startOver')} onPress={startOver}>
+          <Text className="text-lg font-bold text-primary-foreground">
+            {t('result.startOver')}
+          </Text>
+        </Button>
       </View>
-
-      <Text style={styles.disclaimer}>{summary.disclaimer}</Text>
-
-      <Pressable
-        onPress={startOver}
-        accessibilityRole="button"
-        accessibilityLabel={t('result.startOver')}
-        style={({ pressed }) => [styles.primary, pressed && styles.primaryPressed]}
-      >
-        <Text style={styles.primaryLabel}>{t('result.startOver')}</Text>
-      </Pressable>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: spacing.lg,
-    gap: spacing.lg,
-    width: '100%',
-    maxWidth: 720,
-    alignSelf: 'center',
-  },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    padding: spacing.lg,
-  },
-  title: { fontSize: fontSize.heading, fontWeight: '800', color: colors.text },
-  section: { gap: spacing.sm },
-  sectionTitle: { fontSize: fontSize.title, fontWeight: '800', color: colors.text },
-  summary: { fontSize: fontSize.body, color: colors.text, lineHeight: fontSize.body * 1.5 },
-  pointRow: { flexDirection: 'row', gap: spacing.sm },
-  bullet: { fontSize: fontSize.body, color: colors.primaryDark, fontWeight: '800' },
-  pointText: { flex: 1, fontSize: fontSize.body, color: colors.text, lineHeight: fontSize.body * 1.4 },
-  body: { fontSize: fontSize.body, color: colors.text },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    fontSize: fontSize.body,
-    color: colors.text,
-    minHeight: MIN_TOUCH + 16,
-    textAlignVertical: 'top',
-  },
-  askBtn: {
-    minHeight: MIN_TOUCH,
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.sm,
-  },
-  askBtnLabel: { color: colors.onPrimary, fontSize: fontSize.body, fontWeight: '800' },
-  primaryDisabled: { backgroundColor: colors.border },
-  askError: { color: colors.urgentFg, fontSize: fontSize.body },
-  answerBox: { backgroundColor: colors.surfaceAlt, borderRadius: radius.md, padding: spacing.md },
-  answerText: { fontSize: fontSize.body, color: colors.text, lineHeight: fontSize.body * 1.5 },
-  disclaimer: {
-    fontSize: fontSize.caption,
-    color: colors.textMuted,
-    fontStyle: 'italic',
-    lineHeight: fontSize.caption * 1.5,
-    marginTop: spacing.sm,
-  },
-  primary: {
-    minHeight: MIN_TOUCH + 12,
-    backgroundColor: colors.primary,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-  },
-  primaryPressed: { opacity: 0.85 },
-  primaryLabel: { color: colors.onPrimary, fontSize: fontSize.title, fontWeight: '800' },
-});

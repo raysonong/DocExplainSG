@@ -1,35 +1,24 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
+import { Camera, FileText, Image as ImageIcon, X } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Button } from '../components/ui/button';
+import { Text } from '../components/ui/text';
 import { ApiError, analyzeDocument, summarizeDocument } from '../lib/api';
 import { pickPdf, pickPhotos, takePhoto } from '../lib/pickers';
 import { useAnalysis } from '../store/analysis';
 import { useLanguage } from '../store/language';
-import { MIN_TOUCH, colors, fontSize, radius, spacing } from '../theme/theme';
 import type { SelectedFile } from '../types';
 
-/**
- * Review screen: confirm the pages, add or remove, then run the chosen pipeline
- * (explain an official letter, or summarize any document).
- */
 export default function ReviewScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
   const { language } = useLanguage();
-  const { files, addFiles, removeFile, mode, setResult, setSummary } =
-    useAnalysis();
+  const { files, addFiles, removeFile, mode, setResult, setSummary } = useAnalysis();
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -57,149 +46,133 @@ export default function ReviewScreen() {
     if (picked.length) addFiles(picked);
   };
 
-  const busy = mutation.isPending;
-
-  if (busy) {
+  if (mutation.isPending) {
     return (
-      <View style={styles.center} accessibilityLiveRegion="polite">
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.busyText}>{t('review.reading')}</Text>
-        <Text style={styles.busySub}>{t('review.readingSub')}</Text>
+      <View
+        className="flex-1 items-center justify-center gap-3 bg-black px-6"
+        accessibilityLiveRegion="polite"
+      >
+        <ActivityIndicator size="large" color="#FAFAFA" />
+        <Text className="text-xl font-bold text-foreground">{t('review.reading')}</Text>
+        <Text className="text-base text-muted-foreground">{t('review.readingSub')}</Text>
       </View>
     );
   }
 
   return (
     <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        {
-          paddingTop: insets.top + spacing.md,
-          paddingBottom: insets.bottom + spacing.xl,
-        },
-      ]}
+      className="flex-1 bg-black"
+      contentContainerStyle={{
+        flexGrow: 1,
+        paddingTop: insets.top + 16,
+        paddingBottom: insets.bottom + 24,
+        paddingHorizontal: 16,
+      }}
     >
-      <Text style={styles.heading}>
-        {t(files.length === 1 ? 'review.page' : 'review.pages', {
-          count: files.length,
-        })}
-      </Text>
+      <View className="w-full max-w-[560px] gap-5 self-center rounded-3xl border border-border bg-[#0d0d10] p-5">
+        <Text className="text-xl font-bold text-foreground">
+          {t(files.length === 1 ? 'review.page' : 'review.pages', { count: files.length })}
+        </Text>
 
-      {files.length === 0 ? (
-        <Text style={styles.empty}>{t('review.empty')}</Text>
-      ) : (
-        <View style={styles.grid}>
-          {files.map((file) => (
-            <View key={file.uri} style={styles.thumbWrap}>
-              {file.isPdf ? (
-                <View
-                  style={[styles.thumb, styles.pdfThumb]}
-                  accessible
-                  accessibilityLabel={file.name}
+        {files.length === 0 ? (
+          <Text className="py-2 text-base leading-6 text-muted-foreground">
+            {t('review.empty')}
+          </Text>
+        ) : (
+          <View className="flex-row flex-wrap gap-3">
+            {files.map((file) => (
+              <View key={file.uri} className="relative">
+                {file.isPdf ? (
+                  <View
+                    className="h-[120px] w-[120px] items-center justify-center rounded-md border border-border bg-secondary p-2"
+                    accessible
+                    accessibilityLabel={file.name}
+                  >
+                    <FileText color="#A1A1AA" size={36} />
+                    <Text numberOfLines={2} className="mt-1 text-center text-xs text-muted-foreground">
+                      {file.name}
+                    </Text>
+                  </View>
+                ) : (
+                  <Image
+                    source={{ uri: file.uri }}
+                    className="h-[120px] w-[120px] rounded-md border border-border bg-secondary"
+                    accessible
+                    accessibilityLabel={file.name}
+                  />
+                )}
+                <Pressable
+                  onPress={() => removeFile(file.uri)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('review.remove', { name: file.name })}
+                  className="absolute -right-2 -top-2 h-8 w-8 items-center justify-center rounded-full bg-destructive"
                 >
-                  <Text style={styles.pdfIcon} importantForAccessibility="no">
-                    📄
-                  </Text>
-                  <Text numberOfLines={2} style={styles.pdfName}>
-                    {file.name}
-                  </Text>
-                </View>
-              ) : (
-                <Image
-                  source={{ uri: file.uri }}
-                  style={styles.thumb}
-                  accessible
-                  accessibilityLabel={file.name}
-                />
-              )}
-              <Pressable
-                onPress={() => removeFile(file.uri)}
-                accessibilityRole="button"
-                accessibilityLabel={t('review.remove', { name: file.name })}
-                style={styles.removeBtn}
-              >
-                <Text style={styles.removeIcon} importantForAccessibility="no">
-                  ✕
-                </Text>
-              </Pressable>
-            </View>
-          ))}
+                  <X color="#FFFFFF" size={16} />
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        )}
+
+        <View className="flex-row flex-wrap gap-2">
+          <Chip Icon={Camera} label={t('review.addCamera')} onPress={() => addMore('camera')} />
+          <Chip Icon={ImageIcon} label={t('review.addGallery')} onPress={() => addMore('gallery')} />
+          <Chip Icon={FileText} label={t('review.addPdf')} onPress={() => addMore('pdf')} />
         </View>
-      )}
 
-      <View style={styles.addRow}>
-        <AddChip
-          emoji="📷"
-          label={t('review.addCamera')}
-          onPress={() => addMore('camera')}
-        />
-        <AddChip
-          emoji="🖼️"
-          label={t('review.addGallery')}
-          onPress={() => addMore('gallery')}
-        />
-        <AddChip emoji="📄" label={t('review.addPdf')} onPress={() => addMore('pdf')} />
-      </View>
-
-      {mutation.isError && (
-        <View style={styles.errorBox} accessibilityLiveRegion="assertive">
-          <Text style={styles.errorText}>{errorMessage(mutation.error, t)}</Text>
-          <Pressable
-            onPress={() => mutation.mutate()}
-            accessibilityRole="button"
-            accessibilityLabel={t('review.retry')}
-            style={({ pressed }) => [styles.retryBtn, pressed && styles.chipPressed]}
+        {mutation.isError && (
+          <View
+            className="gap-3 rounded-md border border-destructive bg-destructive/20 p-4"
+            accessibilityLiveRegion="assertive"
           >
-            <Text style={styles.retryLabel}>{t('review.retry')}</Text>
-          </Pressable>
-        </View>
-      )}
+            <Text className="text-base text-destructive">
+              {errorMessage(mutation.error, t)}
+            </Text>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="self-start rounded-full"
+              accessibilityLabel={t('review.retry')}
+              onPress={() => mutation.mutate()}
+            >
+              <Text className="font-bold text-destructive-foreground">
+                {t('review.retry')}
+              </Text>
+            </Button>
+          </View>
+        )}
 
-      <Pressable
-        onPress={() => mutation.mutate()}
-        disabled={files.length === 0}
-        accessibilityRole="button"
-        accessibilityLabel={t('review.explain')}
-        style={({ pressed }) => [
-          styles.primary,
-          files.length === 0 && styles.primaryDisabled,
-          pressed && styles.primaryPressed,
-        ]}
-      >
-        <Text style={styles.primaryLabel}>{t('review.explain')}</Text>
-      </Pressable>
+        <Button
+          size="lg"
+          disabled={files.length === 0}
+          accessibilityLabel={t('review.explain')}
+          onPress={() => mutation.mutate()}
+        >
+          <Text className="text-lg font-bold text-primary-foreground">
+            {t('review.explain')}
+          </Text>
+        </Button>
 
-      <Pressable
-        onPress={() => router.back()}
-        accessibilityRole="button"
-        style={styles.secondary}
-      >
-        <Text style={styles.secondaryLabel}>{t('review.cancel')}</Text>
-      </Pressable>
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          className="items-center py-3 active:opacity-70"
+        >
+          <Text className="text-base text-muted-foreground">{t('review.cancel')}</Text>
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }
 
-/** Localised, user-safe error text for the analyze failure. */
-function errorMessage(
-  error: unknown,
-  t: (key: string) => string,
-): string {
-  if (error instanceof ApiError) {
-    // No HTTP status => never reached the server (network/connection issue).
-    if (error.status === undefined) return t('review.errorNetwork');
-    // Server sent a (already friendly) detail message.
-    return error.message;
-  }
-  return t('review.errorGeneric');
-}
+type IconType = typeof Camera;
 
-function AddChip({
-  emoji,
+function Chip({
+  Icon,
   label,
   onPress,
 }: {
-  emoji: string;
+  Icon: IconType;
   label: string;
   onPress: () => void;
 }) {
@@ -208,118 +181,19 @@ function AddChip({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}
+      className="min-h-[44px] flex-row items-center gap-2 rounded-full border border-border bg-secondary px-4 active:opacity-80"
     >
-      <Text style={styles.chipLabel}>
-        <Text importantForAccessibility="no">{emoji} </Text>
-        {label}
-      </Text>
+      <Icon color="#D4D4D8" size={18} />
+      <Text className="text-base font-semibold text-foreground">{label}</Text>
     </Pressable>
   );
 }
 
-const THUMB = 140;
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: spacing.lg,
-    gap: spacing.lg,
-    width: '100%',
-    maxWidth: 720,
-    alignSelf: 'center',
-  },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    padding: spacing.lg,
-  },
-  busyText: { fontSize: fontSize.title, fontWeight: '700', color: colors.text },
-  busySub: { fontSize: fontSize.body, color: colors.textMuted },
-  heading: { fontSize: fontSize.title, fontWeight: '700', color: colors.text },
-  empty: {
-    fontSize: fontSize.body,
-    color: colors.textMuted,
-    lineHeight: fontSize.body * 1.5,
-    paddingVertical: spacing.md,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-  },
-  thumbWrap: { position: 'relative' },
-  thumb: {
-    width: THUMB,
-    height: THUMB,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  pdfThumb: { alignItems: 'center', justifyContent: 'center', padding: spacing.sm },
-  pdfIcon: { fontSize: 40 },
-  pdfName: {
-    fontSize: fontSize.caption,
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginTop: spacing.xs,
-  },
-  removeBtn: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.urgentFg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  removeIcon: { color: '#fff', fontWeight: '800', fontSize: 16 },
-  addRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  chip: {
-    minHeight: MIN_TOUCH,
-    paddingHorizontal: spacing.md,
-    justifyContent: 'center',
-    borderRadius: radius.pill,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    backgroundColor: colors.surfaceAlt,
-  },
-  chipPressed: { opacity: 0.7 },
-  chipLabel: { fontSize: fontSize.body, fontWeight: '700', color: colors.primaryDark },
-  errorBox: {
-    backgroundColor: colors.urgentBg,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.urgentFg,
-  },
-  errorText: { color: colors.urgentFg, fontSize: fontSize.body },
-  retryBtn: {
-    marginTop: spacing.md,
-    minHeight: MIN_TOUCH,
-    alignSelf: 'flex-start',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-    borderRadius: radius.pill,
-    backgroundColor: colors.urgentFg,
-  },
-  retryLabel: { color: '#fff', fontSize: fontSize.body, fontWeight: '800' },
-  primary: {
-    minHeight: MIN_TOUCH + 12,
-    backgroundColor: colors.primary,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-  },
-  primaryDisabled: { backgroundColor: colors.border },
-  primaryPressed: { opacity: 0.85 },
-  primaryLabel: { color: colors.onPrimary, fontSize: fontSize.title, fontWeight: '800' },
-  secondary: { alignItems: 'center', paddingVertical: spacing.md },
-  secondaryLabel: { color: colors.textMuted, fontSize: fontSize.body },
-});
+/** Localised, user-safe error text for the analyze failure. */
+function errorMessage(error: unknown, t: (key: string) => string): string {
+  if (error instanceof ApiError) {
+    if (error.status === undefined) return t('review.errorNetwork');
+    return error.message;
+  }
+  return t('review.errorGeneric');
+}

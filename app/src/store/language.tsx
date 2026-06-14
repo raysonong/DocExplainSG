@@ -16,6 +16,7 @@ import {
 } from 'react';
 
 import i18n, { SUPPORTED_LANGUAGES } from '../i18n';
+import { setFontLanguage } from '../lib/typography';
 import type { AppLanguage } from '../types';
 
 const STORAGE_KEY = 'docexplainsg.language';
@@ -45,12 +46,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       const saved = await AsyncStorage.getItem(STORAGE_KEY);
       const initial = isSupported(saved) ? saved : deviceDefault();
+      setFontLanguage(initial);
       await i18n.changeLanguage(initial);
       setLang(initial);
     })();
   }, []);
 
   const setLanguage = (lang: AppLanguage) => {
+    setFontLanguage(lang);
     setLang(lang);
     i18n.changeLanguage(lang);
     AsyncStorage.setItem(STORAGE_KEY, lang).catch(() => {

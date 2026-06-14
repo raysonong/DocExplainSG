@@ -3,8 +3,10 @@
   "title": { "review": "查看文件", "result": "解释", "summary": "摘要" },
   "mode": {
     "label": "您想做什么？",
-    "explain": "解读信件",
-    "summarize": "总结文件"
+    "explain": "解读",
+    "summarize": "总结",
+    "explainHint": "公积金、建屋局、税务局、人力部、保险和账单信件 — 附截止日期和待办事项。",
+    "summarizeHint": "其他任何文件 — 合同、报告、文章、手册 — 用简单语言说明。"
   },
   "privacy": {
     "title": "您的隐私",
@@ -18,10 +20,13 @@
   "home": {
     "tagline": "用简单易懂的语言看懂任何文件。",
     "takePhoto": "拍照",
+    "takePhotoHint": "最快 — 拍下您的文件",
     "choosePhoto": "选择照片",
     "choosePdf": "选择 PDF",
     "privacyNote": "您上传的内容不会被保存。文件仅会被读取一次以进行解释，然后立即删除。",
-    "chooseLanguage": "选择语言"
+    "chooseLanguage": "选择语言",
+    "iWantTo": "我想要",
+    "uploadDocument": "上传您的文件"
   },
   "review": {
     "page": "已选择 {{count}} 页",

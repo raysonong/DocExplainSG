@@ -3,8 +3,10 @@
   "title": { "review": "Semak dokumen", "result": "Penjelasan", "summary": "Ringkasan" },
   "mode": {
     "label": "Apa yang anda mahu buat?",
-    "explain": "Terangkan surat",
-    "summarize": "Ringkaskan dokumen"
+    "explain": "Terangkan",
+    "summarize": "Ringkaskan",
+    "explainHint": "Surat CPF, HDB, IRAS, MOM, insurans & utiliti — dengan tarikh akhir dan tindakan.",
+    "summarizeHint": "Mana-mana dokumen lain — kontrak, laporan, artikel, manual — dalam bahasa mudah."
   },
   "privacy": {
     "title": "Privasi anda",
@@ -18,10 +20,13 @@
   "home": {
     "tagline": "Fahami sebarang dokumen dalam bahasa yang mudah.",
     "takePhoto": "Ambil foto",
+    "takePhotoHint": "Terpantas — ambil foto dokumen anda",
     "choosePhoto": "Pilih foto",
     "choosePdf": "Pilih PDF",
     "privacyNote": "Apa yang anda muat naik tidak disimpan. Dokumen anda dibaca sekali sahaja untuk diterangkan, kemudian dibuang.",
-    "chooseLanguage": "Pilih bahasa"
+    "chooseLanguage": "Pilih bahasa",
+    "iWantTo": "Saya mahu",
+    "uploadDocument": "Muat naik dokumen anda"
   },
   "review": {
     "page": "{{count}} halaman dipilih",

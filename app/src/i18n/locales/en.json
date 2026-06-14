@@ -3,8 +3,10 @@
   "title": { "review": "Review document", "result": "Explanation", "summary": "Summary" },
   "mode": {
     "label": "What do you want to do?",
-    "explain": "Explain a letter",
-    "summarize": "Summarize a document"
+    "explain": "Explain",
+    "summarize": "Summarize",
+    "explainHint": "CPF, HDB, IRAS, MOM, insurance & utility letters — with deadlines and what to do.",
+    "summarizeHint": "Any other document — contracts, reports, articles, manuals — in plain language."
   },
   "privacy": {
     "title": "Your privacy",
@@ -17,11 +19,14 @@
   },
   "home": {
     "tagline": "Understand any document in plain language.",
-    "takePhoto": "Take photo",
-    "choosePhoto": "Choose photo",
-    "choosePdf": "Choose PDF",
+    "takePhoto": "Take a photo",
+    "takePhotoHint": "Fastest — snap your document",
+    "choosePhoto": "Choose a photo",
+    "choosePdf": "Choose a PDF",
     "privacyNote": "Nothing you upload is stored. Your document is read once to explain it, then discarded.",
-    "chooseLanguage": "Choose language"
+    "chooseLanguage": "Choose language",
+    "iWantTo": "I want to",
+    "uploadDocument": "Upload your document"
   },
   "review": {
     "page": "{{count}} page selected",
