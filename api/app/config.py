@@ -32,8 +32,9 @@ class Settings(BaseSettings):
     # Optional at boot so that /health works without a key configured.
     # Analysis endpoints require it and fail with a clear error if missing.
     anthropic_api_key: str | None = None
-    # Default to Haiku 4.5: fast, low-cost, supports vision + structured output.
-    anthropic_model: str = "claude-haiku-4-5"
+    # Default to Sonnet 4.6: stronger reasoning + vision for accurate extraction.
+    # Swap to claude-haiku-4-5 for lower cost/latency, or claude-opus-4-8.
+    anthropic_model: str = "claude-sonnet-4-6"
     # Per-request timeout (seconds) so a stalled call fails fast instead of hanging.
     llm_timeout_s: float = 45.0
 
