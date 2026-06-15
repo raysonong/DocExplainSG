@@ -3,8 +3,8 @@
   "title": { "review": "查看文件", "result": "解释", "summary": "摘要" },
   "mode": {
     "label": "您想做什么？",
-    "explain": "解读",
-    "summarize": "总结",
+    "explain": "官方信件（截止日期和待办）",
+    "summarize": "任何文件（快速摘要）",
     "explainHint": "公积金、建屋局、税务局、人力部、保险和账单信件 — 附截止日期和待办事项。",
     "summarizeHint": "其他任何文件 — 合同、报告、文章、手册 — 用简单语言说明。"
   },

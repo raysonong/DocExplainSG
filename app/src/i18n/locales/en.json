@@ -3,8 +3,8 @@
   "title": { "review": "Review document", "result": "Explanation", "summary": "Summary" },
   "mode": {
     "label": "What do you want to do?",
-    "explain": "Explain",
-    "summarize": "Summarize",
+    "explain": "Official letter (deadlines & actions)",
+    "summarize": "Any document (quick summary)",
     "explainHint": "CPF, HDB, IRAS, MOM, insurance & utility letters — with deadlines and what to do.",
     "summarizeHint": "Any other document — contracts, reports, articles, manuals — in plain language."
   },

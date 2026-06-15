@@ -3,8 +3,8 @@
   "title": { "review": "Semak dokumen", "result": "Penjelasan", "summary": "Ringkasan" },
   "mode": {
     "label": "Apa yang anda mahu buat?",
-    "explain": "Terangkan",
-    "summarize": "Ringkaskan",
+    "explain": "Surat rasmi (tarikh akhir & tindakan)",
+    "summarize": "Sebarang dokumen (ringkasan pantas)",
     "explainHint": "Surat CPF, HDB, IRAS, MOM, insurans & utiliti — dengan tarikh akhir dan tindakan.",
     "summarizeHint": "Mana-mana dokumen lain — kontrak, laporan, artikel, manual — dalam bahasa mudah."
   },
