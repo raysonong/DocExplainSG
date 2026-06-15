@@ -1,0 +1,24 @@
+# Render blueprint for the DocExplainSG FastAPI backend.
+# Render builds from a Git repo. Push this repo to GitHub, then either:
+#   - New + → "Blueprint" and point it at the repo (uses this file), or
+#   - create a Web Service manually with the same settings below.
+services:
+  - type: web
+    name: docexplainsg-api
+    runtime: python
+    rootDir: api # backend lives in /api (monorepo)
+    region: singapore # data residency for SG documents (PDPA)
+    plan: free # note: free instances sleep when idle (cold start)
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false # set this secret in the Render dashboard, not in git
+      - key: ANTHROPIC_MODEL
+        value: claude-haiku-4-5
+      - key: PYTHON_VERSION
+        value: '3.12.13'
+      # Lock this to your web app's origin once the frontend is deployed.
+      - key: CORS_ORIGINS
+        value: '*'
