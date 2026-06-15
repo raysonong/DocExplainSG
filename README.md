@@ -152,7 +152,7 @@ This app handles sensitive government and financial documents, so privacy is a f
 - **NRIC/FIN redaction, defense-in-depth.** The prompt instructs the model never to emit an NRIC/FIN, and a regex scrub strips them from the output as a backstop if the model ever does.
 - **An AI provider that doesn't train on your data.** DocExplainSG uses Anthropic's **commercial API**, which does **not** train on submitted prompts or responses (zero-retention options exist for stricter requirements) — the privacy-appropriate stance for sensitive documents.
 
-A first-run privacy notice and in-app disclaimers ship in the app. See **[PDPA_CHECKLIST.md](PDPA_CHECKLIST.md)** for the obligation-by-obligation checklist and pre-launch gate, and **[PRIVACY.md](PRIVACY.md)** for a draft privacy policy (pending legal review).
+A first-run privacy notice and in-app disclaimers ship in the app.
 
 ---
 
@@ -178,23 +178,6 @@ cd api && uv run python ../samples/generate_samples.py
 
 ---
 
-## Known limitations & what I'd do next
-
-**Current limitations**
-- MVP demoed against the synthetic `samples/`; not yet pointed at real-world consented documents.
-- Latency is typically a few seconds per analysis; reasoning depth is left at the model default.
-- Camera uses the system picker (not a custom `expo-camera` UI). The "Your document" view shows uploaded thumbnails; a true extracted-text toggle would require returning the text from the API.
-- No user accounts, history, payments, or offline AI (all explicitly out of MVP scope).
-
-**For production**
-1. **Privacy gate:** complete a formal PDPA review (DPO, DPA/zero-retention agreement, DPIA, consent flow) before accepting any real user document.
-2. **Hardening:** rate limiting, request size/timeout tuning, structured metadata logging + monitoring, containerized deploy behind HTTPS, secrets in a vault.
-3. **Quality:** an evaluation set across document types with automated checks that **deadlines and amounts are never invented**; prompt tuning per latency/quality targets; response streaming for perceived speed.
-4. **Distribution:** EAS development/production builds for iOS & Android (custom camera, HEIC handling, store release).
-5. **Accessibility:** device testing with VoiceOver/TalkBack at 200% font scale.
-
----
-
 ## Monorepo layout
 
 ```
@@ -203,7 +186,5 @@ DocExplainSG/
 ├── api/        # FastAPI backend — Python 3.12, uv-managed
 ├── samples/    # Synthetic test documents
 ├── media/      # Screenshots + demo video
-├── PDPA_CHECKLIST.md
-├── PRIVACY.md
 └── render.yaml # Render deployment blueprint
 ```
