@@ -1,91 +1,99 @@
 # DocExplainSG
 
-Plain-language explainer for Singapore government & financial documents.
+**Snap or upload an official Singapore document and get a plain-language explanation — in English, Mandarin (中文), Malay (Bahasa Melayu), or Tamil (தமிழ்) — with deadlines and required actions surfaced up front.**
 
-Photograph or upload an official document — CPF notice, HDB letter, IRAS
-assessment, MOM/work-pass letter, insurance policy, town-council or utility
-notice — and get back a clear explanation in **English, Mandarin (中文),
-Malay (Bahasa Melayu), or Tamil (தமிழ்)**, with **deadlines and required
-actions surfaced prominently**.
+| Home | Explanation |
+| :--: | :--: |
+| <img src="media/home-screen.PNG" alt="DocExplainSG home screen" width="320" /> | <img src="media/explain-screen.PNG" alt="DocExplainSG explanation screen" width="320" /> |
 
-> **MVP / prototype.** This is an early build. A real deployment handling
-> people's CPF/HDB/IRAS/insurance documents would require a formal PDPA review
-> and the privacy hardening described below.
+🎬 **Demo:** [`media/demo.MP4`](media/demo.MP4) — short screen recording of the full flow (download/open to play; `.MP4` doesn't inline-render on GitHub).
+
+> **Status: working MVP / prototype**, built solo, phase by phase. It runs end to end against synthetic sample documents. Handling people's *real* CPF/HDB/IRAS documents in production would require a formal PDPA review and the privacy hardening listed at the bottom — this repo is honest about that gap rather than hiding it.
 
 ---
 
-## Monorepo layout
+## What it does
+
+Singapore government and financial letters — CPF notices, HDB letters, IRAS assessments, MOM/work-pass letters, insurance policies, town-council and utility notices — are dense, jargon-heavy, and often not in the reader's first language. Missing a buried deadline has real consequences.
+
+DocExplainSG reads the document (typed PDF, scanned PDF, or a phone photo), then returns a clear explanation in the reader's chosen language with **deadlines and required actions pulled to the top**. You can ask follow-up questions about the document and save the explanation as a PDF.
+
+---
+
+## Features
+
+- **Three analysis modes**, each a dedicated endpoint:
+  - **Explain an official letter** → structured breakdown (document type, issuer, urgency, deadlines, required actions, summary, key points, reference numbers, glossary).
+  - **Summarize any document** → plain-language summary for non-SG-form documents (contracts, reports, notices).
+  - **Ask a follow-up** → grounded Q&A that answers **only** from the document and refuses to fabricate when the answer isn't there.
+- **Multilingual output** in English / 中文 / Bahasa Melayu / தமிழ் — the language choice drives both the UI and the AI output, and persists across launches.
+- **Vision + text** — handles JPG/PNG/WEBP/HEIC photos and PDFs (both text-based and scanned).
+- **Share/save** the explanation as a PDF.
+- **Accessibility** — screen-reader grouping and labels, font-scale-safe layout, and localized empty/error states with retry.
+- **Privacy by design** — stateless backend, NRIC/FIN redaction, and an AI provider that doesn't train on submitted data (details below).
+
+---
+
+## Tech stack
+
+**Frontend** (`app/`)
+- Expo SDK 54, React Native 0.81, TypeScript, expo-router, React Query
+- i18next for UI localization (en/zh/ms/ta)
+- NativeWind v4 (Tailwind) with hand-authored, shadcn-style UI components (react-native-reusables pattern: `cva` variants + a `cn()` helper)
+- lucide-react-native icons; Inter font with a **language-aware font fallback** (system font for zh/ta to avoid tofu/missing glyphs)
+- Dark-mode-first zinc theme; iOS-primary but cross-platform, with web for quick previews
+
+**Backend** (`api/`)
+- FastAPI on Python 3.12, dependency/venv management with **uv** (not pip)
+- Stateless request handling
+
+**AI**
+- Anthropic Claude via the official SDK
+- **Structured output** (`messages.parse` with Pydantic schemas) so every response is typed JSON, not free text
+- **Vision** via base64 image blocks for photos and scanned PDFs
+- Default model `claude-sonnet-4-6`, swappable to `claude-haiku-4-5` (cheaper/faster) or `claude-opus-4-8`
+
+**Deployment**
+- Render blueprint ([`render.yaml`](render.yaml)), Singapore region for data residency
+
+---
+
+## Architecture
 
 ```
-DocExplainSG/
-├── app/        # Expo (React Native) mobile app — TypeScript, expo-router
-├── api/        # FastAPI backend — Python 3.12, uv-managed
-├── samples/    # Synthetic test documents (added in Phase 2)
-└── README.md   # You are here
+[Expo app]
+   │  multipart upload (1+ files) + target language
+   ▼
+[FastAPI]
+   │  PDF → extract text     │
+   │  image / scanned PDF → vision (base64)
+   ▼
+[Single structured Claude call]  (Pydantic schema → typed JSON)
+   │  summary · deadlines · actions · urgency · refs · glossary
+   ▼
+[Expo app]  renders the result in the chosen language
 ```
 
----
-
-## Prerequisites
-
-| Tool | Version | Notes |
-| ---- | ------- | ----- |
-| Node | 20+ (tested on 24) | for the Expo app |
-| uv   | 0.10+   | Python toolchain & venv for the backend |
-| Expo Go app / iOS Simulator | latest | to run the mobile app |
-
-The backend targets **Python 3.12** (pinned in `api/.python-version`); `uv`
-downloads it automatically if missing.
+The backend is **stateless**: documents are processed in memory and discarded when the response is sent. There is no document database.
 
 ---
 
-## Backend — `api/`
+## Quick start
+
+### Backend (`api/`)
 
 ```bash
 cd api
-uv sync                                   # create venv + install deps
-cp .env.example .env                      # then fill in GEMINI_API_KEY (Phase 2)
-uv run uvicorn app.main:app --reload      # http://localhost:8000
-
-# To test from a physical phone (Expo Go), bind to your LAN so the device can
-# reach it (and allow it through the Windows firewall on first run):
+uv sync                                   # creates the venv + installs deps (Python 3.12 auto-provisioned)
+cp .env.example .env                      # then set ANTHROPIC_API_KEY
 uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 - Health check: <http://localhost:8000/api/health>
-- Interactive docs: <http://localhost:8000/docs>
+- Interactive API docs: <http://localhost:8000/docs>
 - Tests: `uv run pytest`
 
-### Environment variables
-
-See [`api/.env.example`](api/.env.example). Key ones:
-
-| Var | Default | Purpose |
-| --- | ------- | ------- |
-| `ANTHROPIC_API_KEY` | _(none)_ | Anthropic Claude key. Required for analysis. |
-| `ANTHROPIC_MODEL` | `claude-haiku-4-5` | Swappable model (`claude-sonnet-4-6`, `claude-opus-4-8`). |
-| `LLM_TIMEOUT_S` | `45` | Per-request LLM timeout (seconds). |
-| `MAX_UPLOAD_MB` | `20` | Cap on total upload size. |
-| `MAX_FILES` | `10` | Cap on files per request. |
-| `CORS_ORIGINS` | `*` | Comma-separated allowed origins. Lock down for prod. |
-
-The API key is **never** hardcoded and never returned by any endpoint.
-
-### Endpoints
-
-| Method | Path | Purpose |
-| ------ | ---- | ------- |
-| `GET`  | `/api/health` | Liveness; reports whether a key is configured. |
-| `POST` | `/api/analyze` | Analyse a document. `multipart/form-data`: one or more `files` + a `language` field (`en`/`zh`/`ms`/`ta`). Returns the structured `AnalysisResult`. |
-| `POST` | `/api/summarize` | Plain-language summary of **any** document (not SG-form-specific). Same `files` + `language` form. Returns `GenericSummary` (title, summary, key points). |
-| `POST` | `/api/ask` | Follow-up Q&A. JSON `{ document_context, question, language }`. Answers **only** from the context; says so if the answer isn't there. Returns `{ answer }`. |
-
-Supported uploads: JPG, PNG, WEBP, HEIC, and PDF (text-based **or** scanned).
-Caps: `MAX_FILES` files, `MAX_UPLOAD_MB` total. Errors are friendly and never
-leak internals (`400` bad language, `413` too large, `415` unreadable/wrong
-type, `502` model failure after one retry).
-
-Try it against a sample:
+Try it against a bundled synthetic sample:
 
 ```bash
 curl -X POST http://localhost:8000/api/analyze \
@@ -93,14 +101,76 @@ curl -X POST http://localhost:8000/api/analyze \
   -F "files=@samples/cpf_retirement_topup.pdf;type=application/pdf"
 ```
 
+### Frontend (`app/`)
+
+```bash
+cd app
+npm install            # .npmrc sets legacy-peer-deps; no flags needed
+npx expo start         # press i for iOS simulator, or scan the QR in Expo Go
+# or:
+npx expo start --web   # browser preview, no device needed
+```
+
+Built on **Expo SDK 54**, which the current App Store / Play Store **Expo Go** client supports — so you can scan the QR and run it on a real phone without a custom build. For a deployed backend, set `EXPO_PUBLIC_API_BASE` (e.g. in `app/.env`); on the same Wi-Fi the app otherwise auto-detects the dev host on port 8000 (bind the backend to `0.0.0.0`).
+
 ---
 
-## Sample documents — `samples/`
+## Configuration
 
-Synthetic, **entirely fictional** Singapore letters (CPF, HDB, IRAS, MOM,
-insurance) for testing — fake names, NRICs, amounts, and reference numbers.
-Dates are set around mid-June 2026 so some deadlines fall inside the 14-day
-"urgent" window and some outside it. Regenerate with:
+All backend config is environment-driven (see [`api/.env.example`](api/.env.example)):
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `ANTHROPIC_API_KEY` | _(none)_ | Anthropic Claude key. Required for analysis. |
+| `ANTHROPIC_MODEL` | `claude-sonnet-4-6` | Swappable (`claude-haiku-4-5`, `claude-opus-4-8`). |
+| `LLM_TIMEOUT_S` | `45` | Per-request LLM timeout (seconds) so a stalled call fails fast. |
+| `MAX_UPLOAD_MB` | `20` | Cap on total upload size per request. |
+| `MAX_FILES` | `10` | Cap on files (pages/photos) per request. |
+| `CORS_ORIGINS` | `*` | Comma-separated allowed origins. Lock down for production. |
+
+The API key is **never hardcoded and never returned by any endpoint** — `/api/health` only reports whether one is configured.
+
+### Endpoints
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/health` | Liveness; reports whether a key is configured. |
+| `POST` | `/api/analyze` | Structured analysis of an SG official letter. `multipart/form-data`: `files` + `language`. Returns `AnalysisResult`. |
+| `POST` | `/api/summarize` | Plain-language summary of **any** document. Same form. Returns `GenericSummary`. |
+| `POST` | `/api/ask` | Grounded follow-up Q&A. JSON `{ document_context, question, language }`. Answers only from the context. |
+
+Errors are friendly and never leak internals (`400` bad language, `413` too large, `415` unreadable/wrong type, `502` model failure after one retry).
+
+---
+
+## Privacy & PDPA
+
+This app handles sensitive government and financial documents, so privacy is a first-class design constraint, not an afterthought:
+
+- **Stateless, no persistence.** Documents and extracted text live only in memory for the duration of a request and are discarded on response. There is no document database.
+- **No content logging.** Only non-sensitive metadata (timestamps, latency, error codes) is logged — never document contents or extracted personal data.
+- **NRIC/FIN redaction, defense-in-depth.** The prompt instructs the model never to emit an NRIC/FIN, and a regex scrub strips them from the output as a backstop if the model ever does.
+- **An AI provider that doesn't train on your data.** DocExplainSG uses Anthropic's **commercial API**, which does **not** train on submitted prompts or responses (zero-retention options exist for stricter requirements) — the privacy-appropriate stance for sensitive documents.
+
+A first-run privacy notice and in-app disclaimers ship in the app. See **[PDPA_CHECKLIST.md](PDPA_CHECKLIST.md)** for the obligation-by-obligation checklist and pre-launch gate, and **[PRIVACY.md](PRIVACY.md)** for a draft privacy policy (pending legal review).
+
+---
+
+## Engineering decisions & trade-offs
+
+- **Claude with structured output + vision.** `messages.parse` with Pydantic schemas means responses are *typed JSON*, not text I have to parse defensively — extraction (deadlines, amounts, refs) maps straight onto a model. Vision handles photos and scanned PDFs in the same call. The commercial API's no-training guarantee was the deciding factor for sensitive-document handling. *(This project migrated off Google Gemini for exactly that privacy reason.)*
+- **Stateless backend.** The simplest design that's also the most defensible privacy posture — nothing to leak because nothing is stored.
+- **Expo SDK 54 (not the newest).** Pinned to the SDK the public Expo Go client supports, so the app runs on a real phone by scanning a QR — no custom dev build needed to demo it.
+- **uv for Python.** Fast, reproducible installs and automatic Python 3.12 provisioning; one tool for venv + deps.
+- **NativeWind + hand-authored components.** shadcn-style components (cva variants + `cn()`) give a consistent design system without pulling in a web-only UI kit that doesn't run on React Native.
+- **Language-aware font fallback.** Inter for Latin scripts, system fonts for Chinese/Tamil — avoids tofu boxes for glyphs Inter doesn't ship.
+- **Single structured LLM call per analysis.** Keeps latency and cost predictable; one retry on transient model errors, then a friendly failure.
+
+---
+
+## Sample documents
+
+[`samples/`](samples/) holds synthetic, **entirely fictional** SG letters (CPF, HDB, IRAS, MOM, insurance) — fake names, NRICs, amounts, and references — for testing without touching real personal data. Regenerate with:
 
 ```bash
 cd api && uv run python ../samples/generate_samples.py
@@ -108,142 +178,32 @@ cd api && uv run python ../samples/generate_samples.py
 
 ---
 
-## Mobile app — `app/`
+## Known limitations & what I'd do next
 
-```bash
-cd app
-npm install            # .npmrc sets legacy-peer-deps; no flag needed
-npx expo start         # press i for iOS simulator, or scan QR in Expo Go
-# or, no install required on a phone:
-npx expo start --web   # opens in the browser
-```
+**Current limitations**
+- MVP demoed against the synthetic `samples/`; not yet pointed at real-world consented documents.
+- Latency is typically a few seconds per analysis; reasoning depth is left at the model default.
+- Camera uses the system picker (not a custom `expo-camera` UI). The "Your document" view shows uploaded thumbnails; a true extracted-text toggle would require returning the text from the API.
+- No user accounts, history, payments, or offline AI (all explicitly out of MVP scope).
 
-Built on **Expo SDK 54**, which the current App Store / Play Store **Expo Go**
-supports — scan the QR with the iOS Camera app (or Expo Go on Android).
-
-Primary target is **iOS**; the code is cross-platform (Expo) so Android can
-follow. Web works for quick previews, but the camera/file-picker features
-(Phase 3) need a real device — via Expo Go or, once those native modules are
-added, an EAS development build.
-
-> **Backend URL:** the app auto-detects it from the Metro dev host (your
-> machine's LAN IP) on port 8000, so a phone on the same Wi-Fi just works —
-> as long as the backend is bound to `0.0.0.0` (see above). For a deployed
-> backend, set `EXPO_PUBLIC_API_BASE` (e.g. in `app/.env`) to its URL.
+**For production**
+1. **Privacy gate:** complete a formal PDPA review (DPO, DPA/zero-retention agreement, DPIA, consent flow) before accepting any real user document.
+2. **Hardening:** rate limiting, request size/timeout tuning, structured metadata logging + monitoring, containerized deploy behind HTTPS, secrets in a vault.
+3. **Quality:** an evaluation set across document types with automated checks that **deadlines and amounts are never invented**; prompt tuning per latency/quality targets; response streaming for perceived speed.
+4. **Distribution:** EAS development/production builds for iOS & Android (custom camera, HEIC handling, store release).
+5. **Accessibility:** device testing with VoiceOver/TalkBack at 200% font scale.
 
 ---
 
-## Architecture
+## Monorepo layout
 
 ```
-[Expo app] --multipart upload + target_language--> [FastAPI /api/analyze]
-                                                        |
-                                       extract text (PDF) OR read image (vision)
-                                                        |
-                                          single structured LLM call (Claude)
-                                                        |
-                              <-- JSON: summary, deadlines, actions, meta ------
-[Expo app] renders the result screen in the chosen language
+DocExplainSG/
+├── app/        # Expo (React Native) frontend — TypeScript, expo-router
+├── api/        # FastAPI backend — Python 3.12, uv-managed
+├── samples/    # Synthetic test documents
+├── media/      # Screenshots + demo video
+├── PDPA_CHECKLIST.md
+├── PRIVACY.md
+└── render.yaml # Render deployment blueprint
 ```
-
-The backend is **stateless**: documents are processed in memory and discarded
-on response. No database of user documents.
-
----
-
-## Privacy & PDPA
-
-This app handles sensitive government/financial documents. The design rules:
-
-- **No persistence.** Documents and extracted text are processed in memory and
-  discarded immediately. There is no document database in the MVP.
-- **No content logging.** Only non-sensitive metadata (timestamps, latency,
-  error codes) is logged — never document contents or extracted personal data.
-- **Minimal sharing.** Data goes only to the LLM provider needed to do the job.
-- **LLM data-usage.** The app uses the **Anthropic Claude API** (`claude-haiku-4-5`
-  by default). Anthropic's **commercial API does not train on submitted prompts
-  or responses**, which is the privacy-appropriate stance for sensitive
-  government/financial documents — and resolves the data-training concern that
-  applied to the earlier free-Gemini setup. (Anthropic also offers zero-retention
-  options for stricter requirements.) A formal **PDPA review** is still required
-  before a real-user launch.
-
-A first-run privacy notice and in-app disclaimers ship in the app (Phase 6).
-
-See **[PDPA_CHECKLIST.md](PDPA_CHECKLIST.md)** for the full obligation-by-obligation
-checklist, the pre-launch gate (DPO, DPA/ZDR, DPIA, consent, backend hardening),
-and the NRIC/FIN handling notes. A draft privacy policy is in
-**[PRIVACY.md](PRIVACY.md)** (pending legal review).
-
----
-
-## Build status
-
-- [x] **Phase 1 — Scaffold.** Monorepo, Expo app boots to Home, FastAPI runs
-      with `/api/health`, this README.
-- [x] **Phase 2 — Backend pipeline.** `/api/analyze` end to end: PDF text
-      extraction + scanned-PDF/image vision + the single structured Gemini call,
-      synthetic `samples/`, tested via curl and pytest (English).
-- [x] **Phase 3 — Frontend happy path.** Capture/upload (camera, gallery, PDF)
-      → Review screen → `POST /api/analyze` → Result screen (urgency banner,
-      deadlines, actions, summary, collapsible refs/glossary/your-document,
-      pinned disclaimer), English.
-- [x] **Phase 4 — Multilingual.** Persistent language selector (en/zh/ms/ta)
-      driving both UI chrome (i18next) and AI output language; choice remembered
-      across launches; localized result labels, urgency, and document types.
-- [x] **Phase 5 — Accessibility & error states.** Screen-reader grouping +
-      labels (banner/deadlines/actions as single elements, decorative icons
-      hidden), localized empty state + inline error with retry, font-scale-safe
-      wrapping.
-- [x] **Phase 6 — Polish & privacy.** Localized first-run privacy notice
-      (persisted, states the free-tier caveat), disclaimers surfaced, README
-      finalized with production notes.
-- [x] **Phase 7 — Stretch.** `/api/ask` grounded follow-up Q&A (answers only
-      from the document, refuses to fabricate) wired into the Result screen, and
-      share/save the summary as a PDF (expo-print + expo-sharing).
-
----
-
-## Assumptions & known limitations
-
-- **Default model `gemini-3.5-flash`** per spec; model string, vision support,
-  and the structured-JSON mechanism were verified against current Google AI docs
-  / the installed `google-genai` SDK (not from memory).
-- **Expo SDK 54** (not the latest SDK 56). SDK 56 bundles cleanly but the App
-  Store / Play Store Expo Go client only supports up to 54, so it's pinned to 54
-  for on-device testing without a custom build.
-- **npm peer-dependency conflict.** Some Expo optional peer ranges trip npm's
-  strict resolver; `app/.npmrc` sets `legacy-peer-deps=true` so `npm install`
-  and `expo install` just work.
-- **Free Gemini tier trains on submitted data** — the app is a demo for the
-  synthetic `samples/` only (see Privacy above). This is the #1 launch blocker.
-- **Latency**: a typical analysis is ~4–10s; Gemini's free tier occasionally
-  returns transient `503` (handled with one retry, then a friendly error). The
-  reasoning depth is left at the model default.
-- **Camera** uses `expo-image-picker`'s system camera (not a custom
-  `expo-camera` UI). The "Your document" view shows uploaded image thumbnails;
-  a true extracted-text toggle would require returning the text from the API.
-- No user accounts, history, payments, push notifications, or offline AI (all
-  explicitly out of MVP scope).
-
----
-
-## What I'd do next for production
-
-1. **Privacy first (blocker):** move off the free tier to a paid Gemini /
-   Vertex AI endpoint with a no-training guarantee (or self-host), and run a
-   formal **PDPA review**. Only then accept real user documents.
-2. **Hardening:** rate limiting, request size/timeout tuning, structured
-   metadata logging + monitoring, and a proper deployment (containerised API
-   behind HTTPS, secrets in a vault).
-3. **Quality:** an evaluation set of real-world (consented) document types with
-   automated checks that deadlines/amounts are never invented; tune the prompt
-   and `thinking_level` per latency/quality targets; add streaming for
-   perceived speed.
-4. **App distribution:** EAS development/production builds for iOS & Android
-   (enables a custom camera, HEIC handling, and store release).
-5. **Trust features:** a true original-text vs explanation toggle (needs the API
-   to return the extracted text). Follow-up Q&A and share-as-PDF are already in
-   (Phase 7).
-6. **Accessibility:** device testing with VoiceOver/TalkBack at 200% font scale,
-   and dynamic-type audits on real hardware.
